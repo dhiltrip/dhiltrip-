@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: hsl(var(--primary-border));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: hsl(var(--secondary-border));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: hsl(var(--muted-border));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: hsl(var(--accent-border));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: hsl(var(--destructive-border));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --font-inter: var(--font-inter);
+  --font-sora: var(--font-sora);
+
+  --animate-blob: blob 7s infinite;
+}
+
+:root {
+  /* FBFADA - Light Cream */
+  --background: 58 73% 92%;
+  /* 12372A - Deep woodland green */
+  --foreground: 159 51% 14%;
+
+  /* White for cards to pop against the cream background */
+  --card: 0 0% 100%;
+  --card-foreground: 159 51% 14%;
+  --card-border: 91 18% 85%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 159 51% 14%;
+  --popover-border: 91 18% 85%;
+
+  /* 12372A */
+  --primary: 159 51% 14%;
+  /* FBFADA */
+  --primary-foreground: 58 73% 92%;
+  --primary-border: 159 51% 10%;
+
+  /* 436850 - Calm medium green */
+  --secondary: 141 22% 34%;
+  --secondary-foreground: 58 73% 92%;
+  --secondary-border: 141 22% 28%;
+
+  /* Very light sage for muted */
+  --muted: 91 25% 85%;
+  --muted-foreground: 141 22% 34%;
+  --muted-border: 91 25% 80%;
+
+  /* ADBC9F - Warm muted sage */
+  --accent: 91 18% 68%;
+  --accent-foreground: 159 51% 14%;
+  --accent-border: 91 18% 60%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 58 73% 92%;
+  --destructive-border: 0 84% 50%;
+
+  --border: 91 18% 80%;
+  --input: 91 18% 85%;
+  --ring: 141 22% 34%;
+  
+  --radius: 1rem;
+}
+
+.dark {
+  /* 12372A - Deep woodland green as background */
+  --background: 159 51% 14%;
+  /* FBFADA - Light Cream as foreground */
+  --foreground: 58 73% 92%;
+
+  /* 436850 for cards */
+  --card: 141 22% 25%;
+  --card-foreground: 58 73% 92%;
+  --card-border: 141 22% 35%;
+
+  --popover: 141 22% 25%;
+  --popover-foreground: 58 73% 92%;
+  --popover-border: 141 22% 35%;
+
+  /* ADBC9F - Accent light green */
+  --primary: 91 18% 68%;
+  --primary-foreground: 159 51% 14%;
+  --primary-border: 91 18% 75%;
+
+  /* Light Cream */
+  --secondary: 58 73% 92%;
+  --secondary-foreground: 159 51% 14%;
+  --secondary-border: 58 73% 100%;
+
+  --muted: 159 51% 20%;
+  --muted-foreground: 91 18% 68%;
+  --muted-border: 159 51% 25%;
+
+  /* 436850 */
+  --accent: 141 22% 34%;
+  --accent-foreground: 58 73% 92%;
+  --accent-border: 141 22% 45%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 58 73% 92%;
+  --destructive-border: 0 62.8% 40%;
+
+  --border: 141 22% 30%;
+  --input: 141 22% 30%;
+  --ring: 91 18% 68%;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased font-inter selection:bg-primary selection:text-primary-foreground;
+    scroll-behavior: smooth;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sora tracking-tight;
+  }
+}
+
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
