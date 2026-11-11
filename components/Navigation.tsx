@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Image from 'next/image'
+import Link from "next/link";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export function Navigation() {
   const [scrolled, setScrolled] = useState(false);
@@ -38,7 +40,7 @@ export function Navigation() {
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 border-b ${
         scrolled
-          ? "bg-[#12372A]/95 backdrop-blur-lg border-[#ADBC9F]/20 shadow-lg py-2.5"
+          ? "bg-[#12372A] border-[#ADBC9F]/20 shadow-lg py-2.5"
           : "bg-transparent border-transparent py-5"
       }`}
     >
@@ -76,6 +78,10 @@ export function Navigation() {
               {link.name}
             </button>
           ))}
+          <Link href="/" className="text-sm font-semibold text-[#FBFADA] hover:text-white transition-colors">
+            Challenge
+          </Link>
+          <LanguageSwitcher />
           <button
             onClick={() => handleNavClick("#packages")}
             className="px-6 py-2.5 font-semibold rounded-full bg-[#FBFADA] text-[#12372A] transition-all duration-300 hover:bg-white hover:shadow-lg hover:-translate-y-0.5"
@@ -85,17 +91,20 @@ export function Navigation() {
         </nav>
 
         {/* Mobile Toggle Button */}
-        <button
-          className={`md:hidden p-2 rounded-xl transition-colors duration-300 ${
-            scrolled 
-              ? "text-[#FBFADA] hover:bg-white/10" 
-              : "text-white hover:bg-white/10"
-          }`}
-          onClick={() => setMobileMenuOpen(true)}
-          aria-label="Open Menu"
-        >
-          <Menu className="w-6 h-6" />
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <LanguageSwitcher />
+          <button
+            className={`p-2 rounded-xl transition-colors duration-300 ${
+              scrolled
+                ? "text-[#FBFADA] hover:bg-white/10"
+                : "text-white hover:bg-white/10"
+            }`}
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open Menu"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu Dropdown */}
@@ -125,7 +134,8 @@ export function Navigation() {
                   <Image
                     src="/Logo DhilTrip.png"
                     alt="Dhil Trip Logo"
-                    fill={true}
+                    width={794}
+                    height={333}
                     className="h-10 w-auto object-contain"
                   />
                 </div>
@@ -152,7 +162,13 @@ export function Navigation() {
               </div>
 
               {/* Action Button inside Drawer */}
-              <div className="mt-auto">
+              <div className="mt-auto space-y-3">
+                <Link
+                  href="/"
+                  className="block w-full py-4 text-center border border-[#FBFADA]/40 text-[#FBFADA] font-semibold rounded-2xl"
+                >
+                  Join the Challenge
+                </Link>
                 <button
                   onClick={() => handleNavClick("#packages")}
                   className="w-full py-4 bg-[#FBFADA] text-[#12372A] font-semibold rounded-2xl hover:bg-white transition-colors shadow-lg shadow-black/10"

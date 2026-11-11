@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Leaf, Camera } from "lucide-react";
 
 export function Footer() {
@@ -25,17 +26,6 @@ export function Footer() {
             <p className="text-white/70 mb-8 leading-relaxed">
               Sustainable healing tourism in Yogyakarta. Reconnecting travelers with nature, themselves, and local communities.
             </p>
-            <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); alert("Subscribed!"); }}>
-              <input 
-                type="email" 
-                placeholder="Join newsletter" 
-                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-accent text-white placeholder:text-white/40"
-                required
-              />
-              <button className="bg-accent text-[#0B2119] font-semibold px-4 py-2 rounded-lg text-sm hover:bg-white transition-colors">
-                Join
-              </button>
-            </form>
           </div>
 
           {/* Quick Links Column */}
@@ -59,11 +49,16 @@ export function Footer() {
           <div>
             <h4 className="font-sora font-bold text-lg mb-6">Legal</h4>
             <ul className="space-y-4">
-              {['Privacy Policy', 'Terms & Conditions', 'Cookie Policy', 'Cancellation Policy'].map((link) => (
-                <li key={link}>
-                  <button className="text-white/70 hover:text-accent transition-colors">
-                    {link}
-                  </button>
+              {[
+                { label: 'Privacy Policy', anchor: 'privacy' },
+                { label: 'Terms & Conditions', anchor: 'terms' },
+                { label: 'Cookie Policy', anchor: 'cookies' },
+                { label: 'Cancellation Policy', anchor: 'cancellation' },
+              ].map(({ label, anchor }) => (
+                <li key={anchor}>
+                  <Link href={`/legal#${anchor}`} className="text-white/70 hover:text-accent transition-colors">
+                    {label}
+                  </Link>
                 </li>
               ))}
             </ul>

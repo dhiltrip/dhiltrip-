@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ZoomIn } from "lucide-react";
 import Image from "next/image";
 import { client } from "@/sanity/lib/client";
+import { sanityImageLoader } from "@/sanity/lib/image-loader";
 
 type galleryPhoto = {
   _id: string;
@@ -145,6 +146,7 @@ export function Gallery() {
                 onClick={() => setSelectedIndex(idx)}
               >
                 <Image
+                  loader={sanityImageLoader}
                   src={photo.image}
                   alt={photo.alt || `Gallery photo ${idx + 1}`}
                   width={1200}
@@ -192,6 +194,7 @@ export function Gallery() {
               onClick={(e) => e.stopPropagation()}
             >
               <Image
+                  loader={sanityImageLoader}
                 src={selected.image}
                 alt={selected.alt || "Gallery preview"}
                 fill

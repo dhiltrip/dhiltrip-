@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
-import { Inter, Sora } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Fredoka, Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { TranslateRuntime } from "@/components/TranslateRuntime";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -13,10 +14,29 @@ const sora = Sora({
   variable: "--font-sora",
 });
 
+const fredoka = Fredoka({
+  subsets: ["latin"],
+  variable: "--font-fredoka",
+});
+
+const title = "Dhil Trip Explorations - Sustainable Healing Tourism";
+const description =
+  "Sustainable one-day trips around Yogyakarta with the Leave No Trace Challenge: collect plastic bottles, earn points, and redeem local recycled souvenirs.";
+
 export const metadata: Metadata = {
-  title: "Dhil Trip Explorations - Sustainable Healing Tourism",
-  description: "Embark on transformative healing journeys through sustainable tourism. Experience eco-challenges, cultural immersion, and self-recovery in Karimunjawa and Yogyakarta.",
+  metadataBase: new URL("https://www.dhiltrip.com"),
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    type: "website",
+    images: ["/challenge/poster-code-urban.webp"],
+  },
 };
+
+// Lets the bottom menu sit above the iPhone home bar.
+export const viewport: Viewport = { viewportFit: "cover" };
 
 export default function RootLayout({
   children,
@@ -26,10 +46,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${sora.variable} h-full antialiased`}
+      className={`${inter.variable} ${sora.variable} ${fredoka.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
+        <TranslateRuntime />
       </body>
     </html>
   );

@@ -1,0 +1,54 @@
+rules_version = '2';
+
+// The browser may only read; every change goes through the app's server, which checks points and roles.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // A traveler can read their own profile, points and current trip.
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // A traveler can read the souvenirs they redeemed.
+    match /redemptions/{id} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Anyone can see how many of each souvenir are left.
+    match /rewardStock/{rewardId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Anyone can see the travel packages; admins change them through the server.
+    match /packages/{packageId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Photos in "Memories from Jogja"; admins change them through the server.
+    match /memories/{memoryId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Published reviews are public; travelers can also see their own review while it waits for approval.
+    match /reviews/{reviewId} {
+      allow read: if resource.data.status == "published"
+        || (request.auth != null && resource.data.uid == request.auth.uid);
+      allow write: if false;
+    }
+
+    // Published articles are public; drafts stay server-only.
+    match /articles/{articleId} {
+      allow read: if resource.data.published == true;
+      allow write: if false;
+    }
+
+    // Booking codes, bottle codes and everything else stay server-only.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

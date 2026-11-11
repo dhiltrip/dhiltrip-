@@ -38,6 +38,7 @@
 
   --font-inter: var(--font-inter);
   --font-sora: var(--font-sora);
+  --font-fredoka: var(--font-fredoka);
 
   --animate-blob: blob 7s infinite;
 }
@@ -157,4 +158,87 @@
 }
 .animation-delay-4000 {
   animation-delay: 4s;
+}
+
+/* Keep Google Translate working while hiding its own toolbar. */
+iframe.skiptranslate,
+.goog-te-banner-frame,
+.goog-te-balloon-frame,
+#goog-gt-tt {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* Google's floating progress badge and hover tooltip would cover the header. */
+.goog-te-spinner-pos,
+div[class^="VIpgJd-ZVi9od-aZ2wEe"],
+div[class^="VIpgJd-yAWNEb"] {
+  display: none !important;
+}
+
+/* Shared type scale and motion for the participant screens (colors unchanged). */
+@utility title-page {
+  font-family: var(--font-fredoka), sans-serif;
+  font-size: 1.625rem;
+  line-height: 1.15;
+  font-weight: 600;
+}
+
+@utility title-section {
+  font-family: var(--font-fredoka), sans-serif;
+  font-size: 1.375rem;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+@utility title-card {
+  font-family: var(--font-fredoka), sans-serif;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  font-weight: 600;
+}
+
+@theme {
+  --animate-points-float: points-float 1.6s ease-out forwards;
+  --animate-coin-pop: coin-pop 0.6s ease-out;
+  --animate-rise-in: rise-in 0.45s ease-out;
+}
+
+@keyframes points-float {
+  0% { opacity: 0; transform: translateY(8px) scale(0.8); }
+  20% { opacity: 1; transform: translateY(0) scale(1.1); }
+  70% { opacity: 1; transform: translateY(-10px) scale(1); }
+  100% { opacity: 0; transform: translateY(-22px) scale(1); }
+}
+
+@keyframes coin-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35) rotate(-8deg); }
+  100% { transform: scale(1); }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Participant screens use Fredoka for every heading and button so the type feels like one family. */
+.app-shell :is(h1, h2, h3, button, summary) {
+  font-family: var(--font-fredoka), sans-serif;
 }

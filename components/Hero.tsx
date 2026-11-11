@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { ArrowRight, Leaf, Star, Wind, MapPin, Users } from "lucide-react";
 import Image from 'next/image'
+import { useMinWidth } from "@/hooks/use-min-width";
 
 const marqueeItems = [
   "Healing Journeys", "Eco Challenge", "Karimunjawa", "Deep Talk",
@@ -61,6 +62,7 @@ export function Hero() {
 
   const yLeft = useTransform(scrollYProgress, [0, 1], [0, -30]);
   const yRight = useTransform(scrollYProgress, [0, 1], [0, -15]);
+  const isDesktop = useMinWidth(1025);
 
   const handleScrollTo = (id: string) => {
     document.querySelector(id)?.scrollIntoView({ behavior: "smooth" });
@@ -79,11 +81,11 @@ export function Hero() {
         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col lg:flex-row relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-24 pb-12 lg:py-0 items-center justify-center gap-8 lg:gap-0">
+      <div className="flex-1 flex flex-col lg:flex-row relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-24 pb-12 lg:pt-28 lg:pb-10 items-center justify-center gap-8 lg:gap-0">
 
         {/* LEFT — text column */}
         <motion.div
-          style={{ y: typeof window !== "undefined" && window.innerWidth > 1024 ? yLeft : 0 }}
+          style={{ y: isDesktop ? yLeft : 0 }}
           className="w-full lg:w-[48%] flex flex-col justify-center pr-0 lg:pr-6 xl:pr-12 text-left"
         >
           <motion.div
@@ -181,7 +183,7 @@ export function Hero() {
 
         {/* RIGHT — photo mosaic */}
         <motion.div
-          style={{ y: typeof window !== "undefined" && window.innerWidth > 1024 ? yRight : 0 }}
+          style={{ y: isDesktop ? yRight : 0 }}
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
