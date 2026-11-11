@@ -36,7 +36,8 @@ export const metadata: Metadata = {
 };
 
 // Lets the bottom menu sit above the iPhone home bar.
-export const viewport: Viewport = { viewportFit: "cover" };
+// themeColor tints the phone browser bar to match the header.
+export const viewport: Viewport = { viewportFit: "cover", themeColor: "#0D2A1F" };
 
 export default function RootLayout({
   children,
