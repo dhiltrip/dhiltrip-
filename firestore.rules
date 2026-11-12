@@ -15,6 +15,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Community impact totals (bottles, kg collected, kg delivered to the waste bank) are public.
+    match /stats/{statId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Anyone can see how many of each souvenir are left.
     match /rewardStock/{rewardId} {
       allow read: if true;
@@ -43,6 +49,12 @@ service cloud.firestore {
     // Published articles are public; drafts stay server-only.
     match /articles/{articleId} {
       allow read: if resource.data.published == true;
+      allow write: if false;
+    }
+
+    // A traveler can see their own booking requests (status and booking code). Payment photos stay server-only.
+    match /bookingRequests/{requestId} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
       allow write: if false;
     }
 

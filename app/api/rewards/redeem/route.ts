@@ -1,7 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { findReward } from "@/data/challenge";
 import { adminDb } from "@/lib/server/firebase-admin";
-import type { TripDoc } from "@/lib/server/model";
+import { IMPACT_DOC, type TripDoc } from "@/lib/server/model";
 import { HttpError, handle, ok, readJson, requireSession } from "@/lib/server/session";
 
 /** Spends points on a souvenir and queues it for the tour leader to hand over. */
@@ -41,6 +41,8 @@ export async function POST(request: Request) {
         status: "pending",
         createdAt: FieldValue.serverTimestamp(),
       });
+      // Each souvenir is a local upcycled product supported.
+      tx.set(db.doc(IMPACT_DOC), { souvenirs: FieldValue.increment(1) }, { merge: true });
     });
 
     return ok({ id: redemptionRef.id });

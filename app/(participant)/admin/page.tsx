@@ -9,6 +9,7 @@ import {
   Copy,
   Gift,
   Images,
+  Inbox,
   Loader2,
   Map as MapIcon,
   MessageCircle,
@@ -35,6 +36,7 @@ import { TeamManager } from "@/components/admin/TeamManager";
 import { MemoriesManager } from "@/components/admin/MemoriesManager";
 import { ReviewsManager } from "@/components/admin/ReviewsManager";
 import { ArticlesManager } from "@/components/admin/ArticlesManager";
+import { RequestsManager } from "@/components/admin/RequestsManager";
 
 type Booking = {
   code: string;
@@ -262,7 +264,7 @@ function BookingCard({
           </div>
           <p translate="no" className="notranslate mt-3 font-mono text-sm font-bold">{booking.code}</p>
           <p className="mx-auto mt-1 max-w-xs text-pretty text-xs text-[#436850]">
-            Travelers tap Scan in the menu and point the camera here to join this trip.
+            Travelers point their camera here to join this trip (menu:<span translate="no" className="notranslate ml-[0.25em]">Eco Mission</span>).
           </p>
         </div>
       )}
@@ -403,13 +405,13 @@ function StockEditor() {
   );
 }
 
-type Tab = "codes" | "packages" | "souvenirs" | "memories" | "reviews" | "articles" | "team";
+type Tab = "requests" | "codes" | "packages" | "souvenirs" | "memories" | "reviews" | "articles" | "team";
 
 /** Admins create a group booking code after payment and send it to the group on WhatsApp. */
 export default function AdminPage() {
   const state = useChallenge();
   const packages = usePackages();
-  const [tab, setTab] = useState<Tab>("codes");
+  const [tab, setTab] = useState<Tab>("requests");
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [chosenId, setChosenId] = useState<string | null>(null);
   const [date, setDate] = useState(todayInJogja());
@@ -495,9 +497,10 @@ export default function AdminPage() {
         ]}
       />
 
-      <div role="tablist" aria-label="Admin sections" className="grid grid-cols-4 gap-1 rounded-3xl bg-[#DDE5BE] p-1 sm:grid-cols-7">
+      <div role="tablist" aria-label="Admin sections" className="grid grid-cols-4 gap-1 rounded-3xl bg-[#DDE5BE] p-1 sm:grid-cols-8">
         {(
           [
+            ["requests", "Bookings", <Inbox key="i" className="h-4 w-4 shrink-0" />],
             ["codes", "Codes", <Ticket key="i" className="h-4 w-4 shrink-0" />],
             ["packages", "Packages", <MapIcon key="i" className="h-4 w-4 shrink-0" />],
             ["souvenirs", "Stock", <Gift key="i" className="h-4 w-4 shrink-0" />],
@@ -522,7 +525,9 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {tab === "articles" ? (
+      {tab === "requests" ? (
+        <RequestsManager />
+      ) : tab === "articles" ? (
         <ArticlesManager />
       ) : tab === "memories" ? (
         <MemoriesManager />

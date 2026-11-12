@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
-import { Check, Copy, CupSoda, Flag, Gift, Loader2, MessageCircle, PackageCheck, QrCode, RefreshCcw } from "lucide-react";
+import { Check, Copy, CupSoda, Flag, Gift, Loader2, MessageCircle, PackageCheck, QrCode, RefreshCcw, Scale, Truck } from "lucide-react";
 import { POINTS, findReward } from "@/data/challenge";
 import { callApi } from "@/lib/firebase/client";
 import { canLead, createClaimCode, firebaseEnabled, useChallenge } from "@/lib/participant";
 import { StaffHeader, StepBadge } from "@/components/StaffHeader";
+import { formatWeight, useImpact } from "@/lib/site-content";
 
 type PendingRedemption = {
   id: string;
@@ -23,7 +24,7 @@ type PendingRedemption = {
 function bottleCodeMessage(code: string, points: number) {
   return [
     `Your Dhil Trip bottle code (+${points} points): ${code}`,
-    "Open dhiltrip.com, tap Scan, and type this code in \"Or type the code\".",
+    "Open dhiltrip.com, tap Eco Mission, and type this code in the code box.",
     firebaseEnabled ? "It works once, within 2 hours." : "It works once.",
   ].join("\n");
 }
@@ -209,11 +210,114 @@ function ExtraTile({
   );
 }
 
+type Delivery = { id: string; weightGrams: number; note: string; by: string; createdAt: number };
+
+/** After the trip the guide drops the collected waste at the partner waste bank and records it here. */
+function WasteBankDelivery() {
+  const impact = useImpact();
+  const [items, setItems] = useState<Delivery[] | null>(null);
+  const [weight, setWeight] = useState("");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    callApi<{ items: Delivery[] }>("/api/leader/deliveries").then((result) => {
+      if (!cancelled && result.ok) setItems(result.items);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [version]);
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setMessage(null);
+    const result = await callApi("/api/leader/deliveries", { weightKg: Number(weight.replace(",", ".")), note });
+    setBusy(false);
+    if (!result.ok) {
+      setMessage({ ok: false, text: result.message });
+      return;
+    }
+    setMessage({ ok: true, text: "Marked as delivered. It now counts in the impact total." });
+    setWeight("");
+    setNote("");
+    setVersion((value) => value + 1);
+  };
+
+  return (
+    <section className="rounded-3xl bg-white p-5 shadow">
+      <h2 className="title-card flex items-center gap-2 text-xl">
+        <Truck className="h-5 w-5 text-[#03603F]" />
+        Delivered to the waste bank
+      </h2>
+      <p className="mt-1 text-pretty text-xs text-[#436850]">
+        After the trip, take the collected waste to<span translate="no" className="notranslate mx-[0.25em]">Bank Sampah Pa-Q-One</span>and
+        record the weight here.
+      </p>
+      <p className="mt-3 rounded-2xl bg-[#F3F4DC] px-4 py-2.5 text-sm">
+        Delivered so far:<span translate="no" className="notranslate ml-[0.25em] font-semibold">{formatWeight(impact.deliveredGrams)}</span>
+      </p>
+      <form onSubmit={submit} className="mt-3 space-y-2">
+        <div className="flex gap-2">
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step="0.01"
+            required
+            value={weight}
+            onChange={(event) => setWeight(event.target.value)}
+            placeholder="Weight (kg)"
+            aria-label="Delivered weight in kilograms"
+            className="w-32 shrink-0 rounded-xl border border-[#ADBC9F] px-3 py-2.5 text-base"
+          />
+          <input
+            value={note}
+            maxLength={120}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="Note (optional), e.g. trip CUT-1111"
+            aria-label="Note"
+            className="min-w-0 flex-1 rounded-xl border border-[#ADBC9F] px-3 py-2.5 text-base"
+          />
+        </div>
+        <button
+          disabled={busy || !weight}
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[#03603F] text-sm font-semibold text-white disabled:opacity-50"
+        >
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          Mark as delivered
+        </button>
+      </form>
+      {message && (
+        <p key={message.text} className={`mt-2 text-sm font-semibold ${message.ok ? "text-[#03603F]" : "text-[#A33A12]"}`}>{message.text}</p>
+      )}
+      {items && items.length > 0 && (
+        <ul className="mt-4 divide-y divide-[#12372A]/10 text-sm">
+          {items.slice(0, 5).map((item) => (
+            <li key={item.id} className="flex items-center justify-between gap-3 py-2">
+              <span className="min-w-0 truncate text-[#436850]">
+                <span translate="no" className="notranslate">{new Date(item.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                {item.note && ` · ${item.note}`}
+              </span>
+              <span translate="no" className="notranslate shrink-0 font-semibold">{formatWeight(item.weightGrams)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 export default function LeaderPage() {
   const state = useChallenge();
   const [bottles, setBottles] = useState(1);
   const [tumbler, setTumbler] = useState(false);
   const [teloBag, setTeloBag] = useState(false);
+  const [weightKg, setWeightKg] = useState("");
   const [code, setCode] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -239,7 +343,7 @@ export default function LeaderPage() {
   const create = async () => {
     setBusy(true);
     setError(null);
-    const result = await createClaimCode({ bottles, tumbler, teloBag });
+    const result = await createClaimCode({ bottles, tumbler, teloBag, weightKg: Number(weightKg.replace(",", ".")) || 0 });
     setBusy(false);
     if (result.ok) setCode(result.code);
     else setError(result.message);
@@ -250,6 +354,7 @@ export default function LeaderPage() {
     setBottles(1);
     setTumbler(false);
     setTeloBag(false);
+    setWeightKg("");
   };
 
   return (
@@ -257,7 +362,7 @@ export default function LeaderPage() {
       <StaffHeader
         icon={<Flag className="h-6 w-6" />}
         title="Tour leader"
-        subtitle="Count the bottles, then show the traveler a QR code."
+        subtitle="Count and weigh the bottles, then show the traveler a QR code."
         stats={[
           { value: POINTS.perBottle, label: "Points per bottle" },
           { value: POINTS.maxBottlesPerTrip, label: "Bottles max per trip" },
@@ -303,6 +408,32 @@ export default function LeaderPage() {
             </div>
           </div>
 
+          <label className="flex items-center gap-3 rounded-2xl bg-[#F3F4DC] p-4 ring-1 ring-[#ADBC9F]">
+            <Scale className="h-8 w-8 shrink-0 text-[#03603F]" />
+            <span className="min-w-0 flex-1">
+              <span className="block font-fredoka text-lg font-semibold leading-tight">Weight</span>
+              <span className="block text-xs text-[#436850]">Weigh the bottles and waste in the bag</span>
+            </span>
+            <span className="flex shrink-0 items-center gap-1.5">
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                max={50}
+                step="0.01"
+                value={weightKg}
+                onChange={(event) => {
+                  setCode(null);
+                  setWeightKg(event.target.value);
+                }}
+                placeholder="0.00"
+                aria-label="Weight in kilograms"
+                className="w-24 rounded-xl border border-[#ADBC9F] bg-white px-3 py-2.5 text-right text-lg font-semibold"
+              />
+              <span translate="no" className="notranslate font-semibold">kg</span>
+            </span>
+          </label>
+
           <div className="grid grid-cols-2 gap-3">
             <ExtraTile
               on={tumbler}
@@ -330,7 +461,7 @@ export default function LeaderPage() {
           {error && <p className="text-sm font-semibold text-[#A33A12]">{error}</p>}
           <button
             onClick={() => void create()}
-            disabled={points === 0 || busy}
+            disabled={(points === 0 && !(Number(weightKg.replace(",", ".")) > 0)) || busy}
             className="flex min-h-14 w-full items-center justify-between gap-3 rounded-2xl bg-[#0D2A1F] px-5 text-white disabled:opacity-50"
           >
             <span className="flex items-center gap-2 font-fredoka text-lg font-semibold">
@@ -362,9 +493,12 @@ export default function LeaderPage() {
                 <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-sm font-semibold">
                   <Image src="/challenge/coin.webp" alt="" width={18} height={18} />+
                   <span translate="no" className="notranslate mr-[0.25em]">{points}</span>points
+                  {Number(weightKg.replace(",", ".")) > 0 && (
+                    <span translate="no" className="notranslate ml-1 text-[#ADBC9F]">· {Number(weightKg.replace(",", "."))} kg</span>
+                  )}
                 </p>
                 <ShareBottleCode code={code} points={points} />
-                <p className="mt-2 text-pretty text-xs text-[#ADBC9F]">Not next to the traveler? Send the code; they type it on the Scan page.</p>
+                <p className="mt-2 text-pretty text-xs text-[#ADBC9F]">Scanner not working or not next to the traveler? Send the code; they type it in the code box (menu:<span translate="no" className="notranslate ml-[0.25em]">Eco Mission</span>).</p>
                 <button onClick={reset} className="mt-3 min-h-11 w-full rounded-2xl bg-[#8DB255] font-fredoka font-semibold text-[#0D2A1F]">
                   Next traveler
                 </button>
@@ -373,13 +507,14 @@ export default function LeaderPage() {
               <div className="mt-4 rounded-3xl border-2 border-dashed border-[#ADBC9F] px-5 py-10 text-center">
                 <QrCode className="mx-auto h-10 w-10 text-[#ADBC9F]" />
                 <p className="mt-2 text-pretty text-sm text-[#436850]">
-                  The QR code appears here. The traveler scans it with the Scan button to get the points.
+                  The QR code appears here. The traveler scans it to get the points (menu:<span translate="no" className="notranslate ml-[0.25em]">Eco Mission</span>).
                 </p>
               </div>
             )}
           </div>
 
           {firebaseEnabled && <PendingSouvenirs onCount={setPendingCount} />}
+          {firebaseEnabled && <WasteBankDelivery />}
         </section>
       </div>
     </div>

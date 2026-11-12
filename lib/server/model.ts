@@ -8,6 +8,10 @@ export type TripDoc = {
   tumbler: boolean;
   teloBag: boolean;
   visited: string[];
+  /** Grams of waste weighed by the guide on this trip. */
+  weightGrams?: number;
+  /** The traveler's own Eco Mission checklist (no points; points come from the guide's QR). */
+  mission?: { tumbler?: boolean; teloBag?: boolean };
 };
 
 export type UserDoc = {
@@ -18,6 +22,8 @@ export type UserDoc = {
   points: number;
   bottlesTotal: number;
   teloBagsUsed: number;
+  /** Grams of waste collected over all trips. */
+  weightGrams?: number;
   trip: TripDoc | null;
 };
 
@@ -37,12 +43,18 @@ export type ClaimDoc = {
   bottles: number;
   tumbler: boolean;
   teloBag: boolean;
+  /** Weight of the bottles and waste the guide weighed, in grams. */
+  weightGrams?: number;
   createdBy: string;
   expiresAt: number;
   usedBy: string | null;
 };
 
 export const CLAIM_PREFIX = "DT2-";
+/** Largest weight one claim may record: 50 kg. */
+export const MAX_CLAIM_GRAMS = 50_000;
+/** stats/impact: community totals shown on the site. */
+export const IMPACT_DOC = "stats/impact";
 export const CLAIM_LIFETIME_MS = 2 * 60 * 60 * 1000;
 
 const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";

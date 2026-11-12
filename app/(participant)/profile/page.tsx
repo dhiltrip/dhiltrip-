@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Check, ChevronDown, ChevronRight, Loader2, MailCheck, FileText, KeyRound, LogOut, RefreshCcw, Repeat, ShieldCheck } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Loader2, MailCheck, Recycle, Scale, FileText, KeyRound, LogOut, RefreshCcw, Repeat, ShieldCheck } from "lucide-react";
 import { findReward } from "@/data/challenge";
 import { usePackage } from "@/lib/packages";
 import { MyReviews } from "@/components/TripReview";
+import { MyBookings } from "@/components/MyBookings";
+import { formatWeight, useImpact } from "@/lib/site-content";
 import {
   canLead,
   firebaseEnabled,
@@ -21,7 +23,7 @@ import {
 } from "@/lib/participant";
 import { initialsOf } from "@/lib/initials";
 
-function Stat({ value, label, media }: { value: number; label: string; media: React.ReactNode }) {
+function Stat({ value, label, media }: { value: number | string; label: string; media: React.ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col rounded-2xl bg-[#0D2A1F] p-3 text-white">
       <div className="flex items-center gap-2.5">
@@ -92,6 +94,41 @@ function VerifyEmailCard({ role, email }: { role: "leader" | "admin"; email: str
   );
 }
 
+/** Totals of every Dhil Trip traveler, plus where the waste goes. */
+function CommunityImpact() {
+  const impact = useImpact();
+  const items = [
+    { value: impact.bottles.toLocaleString("en-US"), label: "Bottles collected" },
+    { value: formatWeight(impact.weightGrams), label: "Waste collected" },
+    { value: formatWeight(impact.deliveredGrams), label: "Delivered to the waste bank" },
+    { value: impact.souvenirs.toLocaleString("en-US"), label: "Local products supported" },
+  ];
+  return (
+    <section className="rounded-3xl bg-white p-5 shadow-sm">
+      <h2 className="title-card text-xl">All Dhil Trip travelers</h2>
+      <p className="mt-0.5 text-pretty text-xs text-[#436850]">Our community impact so far, updated after every scan and delivery.</p>
+      <dl className="mt-3 grid grid-cols-2 gap-2.5">
+        {items.map((item) => (
+          <div key={item.label} className="rounded-2xl bg-[#F3F4DC] px-3 py-2.5">
+            <dd translate="no" className="notranslate font-fredoka text-2xl font-semibold leading-none text-[#03603F]">{item.value}</dd>
+            <dt className="mt-1 text-xs font-semibold leading-snug text-[#436850]">{item.label}</dt>
+          </div>
+        ))}
+      </dl>
+      <Link href="/#partner" className="mt-3 flex items-center gap-3 rounded-2xl bg-[#0D2A1F] px-4 py-3 text-white">
+        <Recycle className="h-6 w-6 shrink-0 text-[#B6DC7A]" />
+        <span className="min-w-0 flex-1 text-sm">
+          <span className="block font-semibold">Where your bottles go</span>
+          <span className="text-white/80">
+            Meet our partner,<span translate="no" className="notranslate ml-[0.25em]">Bank Sampah Pa-Q-One</span>
+          </span>
+        </span>
+        <ChevronRight className="h-5 w-5 shrink-0" />
+      </Link>
+    </section>
+  );
+}
+
 const rowClass = "flex min-h-12 w-full items-center gap-3 px-4 text-left text-sm font-semibold";
 
 export default function ProfilePage() {
@@ -158,6 +195,17 @@ export default function ProfilePage() {
 
       <section className="rounded-3xl bg-gradient-to-br from-[#8DB255] to-[#3F5F2A] p-4 text-white shadow">
         <h2 className="title-card mb-3 px-1 text-xl">Environmental Impact</h2>
+        <div className="mb-2.5 flex items-center gap-3 rounded-2xl bg-[#0D2A1F] p-3 text-white">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10">
+            <Scale className="h-6 w-6 text-[#B6DC7A]" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p translate="no" className="notranslate font-fredoka text-[2rem] font-semibold leading-none">
+              {formatWeight(state.weightGramsTotal ?? 0)}
+            </p>
+            <p className="mt-1 text-xs font-semibold text-white/85">Weight collected (weighed by your guide)</p>
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-2.5">
           <Stat
             value={state.bottlesTotal}
@@ -190,6 +238,8 @@ export default function ProfilePage() {
         </div>
       </section>
 
+      <CommunityImpact />
+
       {pkg && (
         <section className="rounded-3xl bg-white p-5 shadow-sm">
           <div className="flex items-baseline justify-between gap-3">
@@ -219,6 +269,8 @@ export default function ProfilePage() {
           </ul>
         </section>
       )}
+
+      <MyBookings />
 
       <MyReviews />
 

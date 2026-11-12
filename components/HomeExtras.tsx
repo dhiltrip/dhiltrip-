@@ -11,6 +11,7 @@ import { averageRating } from "@/data/content";
 import { focusStyle } from "@/data/focus";
 import { useArticles, useMemories, useReviews } from "@/lib/site-content";
 import { ArticleList } from "@/components/ArticleList";
+import { PartnerSection } from "@/components/PartnerSection";
 import { Stars } from "@/components/Stars";
 import { emailCopyEnabled, sendEmailCopy } from "@/lib/send-email";
 
@@ -201,6 +202,8 @@ export function HomeExtras() {
           }))}
         />
       </section>
+
+      <PartnerSection />
 
       <section aria-labelledby="testimonials-heading">
         <h2 id="testimonials-heading" className={heading}>What Our Travelers Say</h2>

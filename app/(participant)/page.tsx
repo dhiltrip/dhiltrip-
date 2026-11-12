@@ -3,9 +3,10 @@
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Check, ChevronRight, Loader2, Map as MapIcon, Maximize2, X } from "lucide-react";
+import { CalendarCheck, Check, ChevronRight, Loader2, Map as MapIcon, Maximize2, X } from "lucide-react";
 import { HomeExtras } from "@/components/HomeExtras";
 import { TripReview } from "@/components/TripReview";
+import { HowItWorksButton, TelobagInfoButton } from "@/components/InfoSheets";
 import { PosterViewer } from "@/components/PosterViewer";
 import { POINTS, cheapestReward, nextRewardFor, type ChallengePackage } from "@/data/challenge";
 import { usePackage, usePackages } from "@/lib/packages";
@@ -59,7 +60,10 @@ function MyTrip({ pkg, state }: { pkg: ChallengePackage; state: ChallengeState }
 
   return (
     <div className="space-y-6 px-5 pt-6">
-      <h1 className="title-page text-center text-black">Your travel package</h1>
+      <div className="flex flex-col items-center gap-2">
+        <h1 className="title-page text-center text-black">Your travel package</h1>
+        <HowItWorksButton />
+      </div>
       <div className="space-y-6 lg:grid lg:grid-cols-[300px_1fr] lg:items-start lg:gap-8 lg:space-y-0">
       <button
         onClick={() => setViewing(true)}
@@ -95,6 +99,7 @@ function MyTrip({ pkg, state }: { pkg: ChallengePackage; state: ChallengeState }
           <li className="flex items-center gap-2.5">
             <CheckBox checked={state.teloBagClaimed} />
             <span>Using<span translate="no" className="notranslate mx-[0.25em]">Telobag</span></span>
+            <TelobagInfoButton className="h-6 w-6" />
           </li>
           <li>
             <div className="flex items-baseline justify-between gap-2">
@@ -176,6 +181,18 @@ function JoinSheet({ pkg, switching, onClose }: { pkg: ChallengePackage; switchi
             </span>
           </button>
           <p className="text-pretty text-sm leading-relaxed">{pkg.description}</p>
+          <Link
+            href={`/book/${pkg.id}`}
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#03603F] font-fredoka text-lg font-semibold text-white shadow"
+          >
+            <CalendarCheck className="h-5 w-5" />
+            Book this trip
+          </Link>
+          <div className="flex items-center gap-3 text-xs font-semibold text-[#436850]">
+            <span className="h-px flex-1 bg-[#ADBC9F]" />
+            Already booked? Enter your code
+            <span className="h-px flex-1 bg-[#ADBC9F]" />
+          </div>
           <form onSubmit={submit} className="space-y-3">
             <label className="block text-sm font-semibold">
               Booking code
@@ -231,6 +248,7 @@ function ChoosePackage() {
           <br />
           Simply just follow the rules below. But, please choose your travel package first!
         </p>
+        <HowItWorksButton tone="light" className="mt-4" />
       </section>
 
       <PackageCatalog title="Choose your travel package" subtitle="Package Include Tour Guide" items={packages} />

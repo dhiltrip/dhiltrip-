@@ -78,7 +78,8 @@ function DesktopSidebar({ state, gain, pathname }: SidebarProps) {
           }`}
         >
           <ScanLine className="h-6 w-6 shrink-0" strokeWidth={1.75} />
-          Scan
+          {/* A feature name: kept as is in every language (and short enough for the menu). */}
+          <span translate="no" className="notranslate">Eco Mission</span>
         </Link>
         {item("/rewards", "Rewards", Award)}
         {item("/profile", "Profile", User)}
@@ -195,13 +196,14 @@ export default function ParticipantLayout({ children }: { children: ReactNode })
               }`}
             >
               <ScanLine className="h-9 w-9" strokeWidth={1.75} />
-              <span className="sr-only">Scan</span>
+              <span translate="no" className="notranslate sr-only">Eco Mission</span>
             </Link>
             <span
               aria-hidden="true"
-              className="absolute inset-x-0 bottom-1.5 line-clamp-2 px-0.5 text-center text-[10px] font-semibold leading-[1.1] text-white [overflow-wrap:anywhere]"
+              translate="no"
+              className="notranslate absolute inset-x-0 bottom-1.5 line-clamp-2 px-0.5 text-center text-[10px] font-semibold leading-[1.1] text-white [overflow-wrap:anywhere]"
             >
-              Scan
+              Eco Mission
             </span>
           </div>
           <TabLink tab={tabs[2]} active={pathname === "/rewards"} />

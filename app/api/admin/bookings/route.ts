@@ -1,8 +1,7 @@
-import { FieldValue, type Timestamp } from "firebase-admin/firestore";
-import { prefixOf } from "@/data/challenge";
-import { getPackage } from "@/lib/server/packages";
+import type { Timestamp } from "firebase-admin/firestore";
+import { createBookingCode } from "@/lib/server/bookings";
 import { adminDb } from "@/lib/server/firebase-admin";
-import { bookingCodeFor, type BookingDoc } from "@/lib/server/model";
+import type { BookingDoc } from "@/lib/server/model";
 import { HttpError, handle, ok, readJson, requireSession } from "@/lib/server/session";
 
 /** Recent group bookings with how many travelers have joined each. */
@@ -57,35 +56,13 @@ export async function POST(request: Request) {
       return ok({});
     }
 
-    const packageId = String(body.packageId ?? "");
-    const pkg = await getPackage(packageId);
-    if (!pkg) throw new HttpError(400, "Choose a package.");
-    const date = String(body.date ?? "");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new HttpError(400, "Choose the trip date.");
-    const seats = Math.floor(Number(body.seats ?? 0));
-    if (!Number.isFinite(seats) || seats < 1 || seats > 100) throw new HttpError(400, "Seats must be between 1 and 100.");
-    const label = String(body.label ?? "").trim().slice(0, 80);
-
-    const booking: BookingDoc & { createdAt: FieldValue } = {
-      packageId,
-      date,
-      seats,
-      label,
-      members: [],
-      active: true,
+    const code = await createBookingCode({
+      packageId: String(body.packageId ?? ""),
+      date: String(body.date ?? ""),
+      seats: Number(body.seats ?? 0),
+      label: String(body.label ?? ""),
       createdBy: session.uid,
-      createdAt: FieldValue.serverTimestamp(),
-    };
-    // A clash on the random part is unlikely; retry a few times if it happens.
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const code = bookingCodeFor(prefixOf(pkg), date);
-      try {
-        await adminDb().collection("bookings").doc(code).create(booking);
-        return ok({ code });
-      } catch (error) {
-        if ((error as { code?: number }).code !== 6) throw error;
-      }
-    }
-    throw new HttpError(500, "Could not create a unique code. Please try again.");
+    });
+    return ok({ code });
   });
 }

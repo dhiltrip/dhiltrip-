@@ -26,7 +26,17 @@ type UserData = {
   points?: number;
   bottlesTotal?: number;
   teloBagsUsed?: number;
-  trip?: { code: string; packageId: string; bottles: number; tumbler: boolean; teloBag: boolean; visited: string[] } | null;
+  weightGrams?: number;
+  trip?: {
+    code: string;
+    packageId: string;
+    bottles: number;
+    tumbler: boolean;
+    teloBag: boolean;
+    visited: string[];
+    weightGrams?: number;
+    mission?: { tumbler?: boolean; teloBag?: boolean };
+  } | null;
 };
 
 let state: ChallengeState | null = null;
@@ -71,6 +81,10 @@ function toState(user: User, data: UserData | null, redemptions: Redemption[]): 
     tumblerClaimed: trip?.tumbler ?? false,
     teloBagClaimed: trip?.teloBag ?? false,
     teloBagsUsed: data?.teloBagsUsed ?? 0,
+    weightGramsTotal: data?.weightGrams ?? 0,
+    weightGramsThisTrip: trip?.weightGrams ?? 0,
+    missionTumbler: trip?.mission?.tumbler === true,
+    missionTeloBag: trip?.mission?.teloBag === true,
     visitedStopIds: trip?.visited ?? [],
     redemptions,
     usedClaimIds: [],

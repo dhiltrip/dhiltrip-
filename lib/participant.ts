@@ -154,10 +154,20 @@ export async function chooseRoute(stopId: string, routeIds: string[]): Promise<A
   return callApi("/api/trip/visit", { stopId });
 }
 
+/** The traveler's own Eco Mission checklist (tumbler brought, Telobag used). No points. */
+export async function setMission(item: "tumbler" | "teloBag", done: boolean): Promise<ActionResult> {
+  if (isGuestNow()) return guestBlocked;
+  if (!firebaseEnabled) {
+    demo.setMission(item, done);
+    return { ok: true };
+  }
+  return callApi("/api/trip/mission", { item, done });
+}
+
 export async function redeemClaim(code: string): Promise<demo.ClaimResult> {
   if (isGuestNow()) return guestBlocked;
   const result = firebaseEnabled
-    ? await callApi<{ points: number; bottles: number; capped: boolean }>("/api/claims/redeem", { code })
+    ? await callApi<{ points: number; bottles: number; weightGrams: number; capped: boolean }>("/api/claims/redeem", { code })
     : demo.redeemClaim(code);
   if (result.ok) announceGain(result.points);
   return result;
@@ -169,8 +179,11 @@ export async function redeemReward(rewardId: string): Promise<demo.RedeemResult>
   return callApi("/api/rewards/redeem", { rewardId });
 }
 
-export async function createClaimCode(input: { bottles: number; tumbler: boolean; teloBag: boolean }) {
-  if (!firebaseEnabled) return { ok: true as const, code: demo.createClaimCode(input) };
+export async function createClaimCode(input: { bottles: number; tumbler: boolean; teloBag: boolean; weightKg?: number }) {
+  if (!firebaseEnabled) {
+    const { bottles, tumbler, teloBag } = input;
+    return { ok: true as const, code: demo.createClaimCode({ bottles, tumbler, teloBag }) };
+  }
   return callApi<{ code: string }>("/api/claims", input);
 }
 

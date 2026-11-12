@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { collection, onSnapshot, query, where, type Timestamp } from "firebase/firestore";
+import { collection, doc, onSnapshot, query, where, type Timestamp } from "firebase/firestore";
 import { builtInMemories, builtInReviews, type Memory, type Review, type ReviewStatus } from "@/data/content";
 import type { Article } from "@/data/articles";
+import type { BookingRequest } from "@/data/booking";
 import { readFocus } from "@/data/focus";
 import { clientAuth, clientDb, firebaseEnabled } from "@/lib/firebase/client";
 
@@ -153,4 +154,83 @@ const articleStore = liveStore<Article>("dhiltrip-articles", [], (emit) =>
 /** Published articles, newest first (without their full text). */
 export function useArticles() {
   return useSyncExternalStore(articleStore.subscribe, articleStore.get, articleStore.server);
+}
+
+/** Community totals: bottles and kg collected on trips, kg delivered to the waste bank, souvenirs supported. */
+export type Impact = { bottles: number; weightGrams: number; deliveredGrams: number; souvenirs: number; teloBags: number };
+const NO_IMPACT: Impact = { bottles: 0, weightGrams: 0, deliveredGrams: 0, souvenirs: 0, teloBags: 0 };
+let impact: Impact = NO_IMPACT;
+let impactStarted = false;
+const impactListeners = new Set<() => void>();
+
+function subscribeImpact(listener: () => void) {
+  if (!impactStarted && firebaseEnabled && typeof window !== "undefined") {
+    impactStarted = true;
+    onSnapshot(
+      doc(clientDb(), "stats", "impact"),
+      (snap) => {
+        const data = snap.data() ?? {};
+        impact = {
+          bottles: Number(data.bottles ?? 0),
+          weightGrams: Number(data.weightGrams ?? 0),
+          deliveredGrams: Number(data.deliveredGrams ?? 0),
+          souvenirs: Number(data.souvenirs ?? 0),
+          teloBags: Number(data.teloBags ?? 0),
+        };
+        impactListeners.forEach((item) => item());
+      },
+      (error) => console.warn("impact listener:", error.code),
+    );
+  }
+  impactListeners.add(listener);
+  return () => impactListeners.delete(listener);
+}
+
+export function useImpact() {
+  return useSyncExternalStore(subscribeImpact, () => impact, () => NO_IMPACT);
+}
+
+/** 1250 g -> "1.3 kg", 400 g -> "400 g". */
+export const formatWeight = (grams: number) =>
+  grams <= 0 ? "0 kg" : grams >= 1000 ? `${(grams / 1000).toFixed(grams >= 10000 ? 0 : 1)} kg` : `${Math.round(grams)} g`;
+
+/** The signed-in traveler's booking requests from the app, newest first. */
+export function useMyBookingRequests() {
+  const [items, setItems] = useState<BookingRequest[]>([]);
+  const uid = firebaseEnabled ? clientAuth().currentUser?.uid : undefined;
+  useEffect(() => {
+    if (!uid) return;
+    return onSnapshot(
+      query(collection(clientDb(), "bookingRequests"), where("uid", "==", uid)),
+      (snap) =>
+        setItems(
+          snap.docs
+            .map((item) => {
+              const data = item.data();
+              return {
+                id: item.id,
+                uid: String(data.uid ?? ""),
+                packageId: String(data.packageId ?? ""),
+                packageTitle: String(data.packageTitle ?? ""),
+                date: String(data.date ?? ""),
+                people: Number(data.people ?? 1),
+                fullName: String(data.fullName ?? ""),
+                country: String(data.country ?? ""),
+                passport: String(data.passport ?? ""),
+                email: String(data.email ?? ""),
+                whatsapp: String(data.whatsapp ?? ""),
+                meetingPoint: String(data.meetingPoint ?? ""),
+                totalLabel: String(data.totalLabel ?? ""),
+                status: (data.status as BookingRequest["status"]) ?? "new",
+                code: (data.code as string | null) ?? null,
+                adminNote: String(data.adminNote ?? ""),
+                createdAt: toMillis(data.createdAt),
+              } satisfies BookingRequest;
+            })
+            .sort((a, b) => b.createdAt - a.createdAt),
+        ),
+      (error) => console.warn("booking requests listener:", error.code),
+    );
+  }, [uid]);
+  return uid ? items : [];
 }

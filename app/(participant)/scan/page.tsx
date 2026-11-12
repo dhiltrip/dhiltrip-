@@ -2,10 +2,13 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import jsQR from "jsqr";
 import { POINTS, packageForBookingCode } from "@/data/challenge";
-import { joinTrip, redeemClaim, type ClaimResult } from "@/lib/participant";
+import { joinTrip, redeemClaim, setMission, useChallenge, type ClaimResult } from "@/lib/participant";
+import { formatWeight } from "@/lib/site-content";
+import { HowItWorksButton, TelobagInfoButton } from "@/components/InfoSheets";
 import { useAllPackages } from "@/lib/packages";
 
 // Decoding every frame would block the page; a few checks per second is enough for a QR code.
@@ -14,6 +17,102 @@ const SCAN_MAX_WIDTH = 640;
 
 type JoinResult = { kind: "join"; ok: true; title: string } | { kind: "join"; ok: false; message: string };
 type ScanResult = (ClaimResult & { kind?: undefined }) | JoinResult;
+
+function MissionItem({
+  done,
+  onToggle,
+  disabled,
+  children,
+  info,
+}: {
+  done: boolean;
+  onToggle: () => void;
+  disabled: boolean;
+  children: React.ReactNode;
+  info?: React.ReactNode;
+}) {
+  return (
+    <li className="flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-2.5">
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={done}
+        onClick={onToggle}
+        disabled={disabled}
+        className="flex min-w-0 flex-1 items-center gap-3 text-left disabled:opacity-60"
+      >
+        <span
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 ${
+            done ? "border-[#B6DC7A] bg-[#B6DC7A] text-[#0D2A1F]" : "border-white/80"
+          }`}
+        >
+          {done && <Check className="h-4 w-4" strokeWidth={3} />}
+        </span>
+        <span className="min-w-0 text-sm font-semibold">{children}</span>
+      </button>
+      {info}
+    </li>
+  );
+}
+
+/** The traveler's own checklist; points for these come from the guide's QR at the end of the trip. */
+function EcoChecklist() {
+  const state = useChallenge();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const joined = Boolean(state?.packageId);
+  const toggle = async (item: "tumbler" | "teloBag", done: boolean) => {
+    setBusy(item);
+    setError(null);
+    const result = await setMission(item, done);
+    setBusy(null);
+    if (!result.ok) setError(result.message);
+  };
+
+  return (
+    <section className="mt-6 w-full shrink-0 rounded-3xl bg-gradient-to-br from-[#8DB255] to-[#3F5F2A] p-4 text-left text-white shadow-lg">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="font-fredoka text-xl font-semibold">Your mission checklist</h2>
+        <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-semibold text-white/90">
+          <Image src="/challenge/coin.webp" alt="" width={18} height={18} />
+          <span translate="no" className="notranslate">{POINTS.perBottle}</span>/ bottle
+        </span>
+      </div>
+      <ul className="mt-3 space-y-2">
+        <MissionItem
+          done={state?.missionTumbler === true}
+          disabled={!joined || busy !== null}
+          onToggle={() => void toggle("tumbler", !state?.missionTumbler)}
+        >
+          I brought my own drinking bottle (tumbler)
+        </MissionItem>
+        <MissionItem
+          done={state?.missionTeloBag === true}
+          disabled={!joined || busy !== null}
+          onToggle={() => void toggle("teloBag", !state?.missionTeloBag)}
+          info={<TelobagInfoButton />}
+        >
+          <span translate="no" className="notranslate mr-[0.3em]">Telobag:</span>I use the bag from my guide
+        </MissionItem>
+        <li className="flex items-center gap-3 rounded-2xl bg-white/10 px-3 py-2.5 text-sm font-semibold">
+          <Image src="/challenge/bottle.webp" alt="" width={24} height={24} className="h-6 w-auto shrink-0" />
+          <span className="min-w-0">
+            Bottles collected this trip:<span translate="no" className="notranslate ml-[0.25em]">{state?.bottlesThisTrip ?? 0}</span>
+            {state?.weightGramsThisTrip ? (
+              <span translate="no" className="notranslate ml-[0.25em] text-white/85">({formatWeight(state.weightGramsThisTrip)})</span>
+            ) : null}
+          </span>
+        </li>
+      </ul>
+      <p className="mt-3 text-pretty text-xs text-white/85">
+        {joined
+          ? "Tick these for yourself. Points are added when you scan your guide's QR code."
+          : "Join a trip on Home first, then tick your mission here."}
+      </p>
+      {error && <p className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-[#A33A12]">{error}</p>}
+    </section>
+  );
+}
 
 export default function ScanPage() {
   const router = useRouter();
@@ -141,8 +240,15 @@ export default function ScanPage() {
       <div className="absolute inset-0 bg-black/35" />
 
       <div className="relative flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-5 pb-4 pt-6 text-center text-white lg:mx-auto lg:w-full lg:max-w-md lg:pt-16">
-        <h1 className="text-xl font-medium">Scan a code on the plastic bottles and get your point!</h1>
-        <p className="mt-1 text-pretty text-xs text-white/85">Got a booking QR from our admin? Scan it here to join your trip.</p>
+        <div className="flex w-full items-center justify-between gap-3">
+          <p translate="no" className="notranslate font-fredoka text-lg font-semibold text-[#B6DC7A]">Eco Mission</p>
+          <HowItWorksButton tone="light" />
+        </div>
+        <h1 className="mt-2 text-pretty font-fredoka text-xl font-semibold leading-snug">Scan the QR code from your tour guide to claim your points</h1>
+        <p className="mt-1 text-pretty text-xs text-white/85">
+          Your guide verifies your plastic bottles at the end of the trip. Got a booking QR from our admin? Scan it here to join your
+          trip.
+        </p>
 
         {result ? (
           <div className="mt-8 w-full animate-rise-in rounded-3xl bg-white p-6 text-[#12372A]">
@@ -163,9 +269,20 @@ export default function ScanPage() {
                 <p className="title-card mt-2 text-3xl text-[#03603F]">
                   +<span translate="no" className="notranslate mr-[0.25em]">{result.points}</span>points
                 </p>
-                <p className="mt-1 text-sm">{result.bottles} plastic bottles recorded. Thank you!</p>
+                <p className="mt-1 text-sm">
+                  <span translate="no" className="notranslate mr-[0.25em]">{result.bottles}</span>plastic bottles recorded
+                  {result.weightGrams ? (
+                    <>
+                      {" "}
+                      (<span translate="no" className="notranslate">{formatWeight(result.weightGrams)}</span>)
+                    </>
+                  ) : null}
+                  . Thank you!
+                </p>
                 {result.capped && (
-                  <p className="mt-1 text-xs">The limit is {POINTS.maxBottlesPerTrip} bottles per trip.</p>
+                  <p className="mt-1 text-xs">
+                    The limit is<span translate="no" className="notranslate mx-[0.25em]">{POINTS.maxBottlesPerTrip}</span>bottles per trip.
+                  </p>
                 )}
               </>
             ) : (
@@ -195,11 +312,16 @@ export default function ScanPage() {
 
         {cameraError && !result && <p className="mt-4 text-pretty text-xs text-white/90">{cameraError}</p>}
         {!result && (
-          <form onSubmit={submitManual} className="mt-3 flex w-full gap-2">
+          <p className="mt-4 w-full text-pretty text-left text-xs text-white/85">
+            Code entry is only for when QR scanning is under maintenance. Your guide will give you the code.
+          </p>
+        )}
+        {!result && (
+          <form onSubmit={submitManual} className="mt-2 flex w-full gap-2">
             <input
               value={manualCode}
               onChange={(event) => setManualCode(event.target.value)}
-              placeholder="Or type the code"
+              placeholder="Type the code, e.g. DT2-…"
               aria-label="Type the code"
               className="min-w-0 flex-1 rounded-xl bg-white/95 px-3 py-2.5 text-sm uppercase text-[#12372A] outline-none placeholder:normal-case"
             />
@@ -208,17 +330,7 @@ export default function ScanPage() {
             </button>
           </form>
         )}
-      </div>
-
-      <div className="relative mx-5 mb-8 flex shrink-0 items-center [@media(max-height:760px)]:hidden justify-between gap-3 rounded-3xl lg:mx-auto lg:mb-12 lg:w-full lg:max-w-md bg-gradient-to-br from-[#8DB255] to-[#3F5F2A] p-5 text-white">
-        <div>
-          <p className="font-fredoka text-2xl font-semibold">Plastic bottles</p>
-          <p className="text-sm">Please place them in<span translate="no" className="notranslate mx-[0.25em]">Telobag</span></p>
-        </div>
-        <div className="flex flex-col items-center">
-          <Image src="/challenge/coin.webp" alt="" width={36} height={36} />
-          <span className="mt-1 text-sm font-semibold">{POINTS.perBottle} points</span>
-        </div>
+        <EcoChecklist />
       </div>
     </div>
   );

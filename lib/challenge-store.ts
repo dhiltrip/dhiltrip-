@@ -34,6 +34,12 @@ export type ChallengeState = {
   tumblerClaimed: boolean;
   teloBagClaimed: boolean;
   teloBagsUsed: number;
+  /** Grams of waste the guide weighed for this traveler, over all trips and on this trip. */
+  weightGramsTotal?: number;
+  weightGramsThisTrip?: number;
+  /** The traveler's own Eco Mission checklist for this trip. */
+  missionTumbler?: boolean;
+  missionTeloBag?: boolean;
   visitedStopIds: string[];
   redemptions: Redemption[];
   usedClaimIds: string[];
@@ -49,6 +55,10 @@ const emptyState: ChallengeState = {
   tumblerClaimed: false,
   teloBagClaimed: false,
   teloBagsUsed: 0,
+  weightGramsTotal: 0,
+  weightGramsThisTrip: 0,
+  missionTumbler: false,
+  missionTeloBag: false,
   visitedStopIds: [],
   redemptions: [],
   usedClaimIds: [],
@@ -177,7 +187,7 @@ export function parseClaimCode(raw: string): Claim | null {
 }
 
 export type ClaimResult =
-  | { ok: true; points: number; bottles: number; capped: boolean }
+  | { ok: true; points: number; bottles: number; weightGrams?: number; capped: boolean }
   | { ok: false; message: string };
 
 export function redeemClaim(raw: string): ClaimResult {
@@ -244,4 +254,10 @@ export function redeemReward(rewardId: string): RedeemResult {
     ],
   });
   return { ok: true };
+}
+
+/** Demo: tick an Eco Mission item on this device. */
+export function setMission(item: "tumbler" | "teloBag", done: boolean) {
+  const current = read();
+  write(item === "tumbler" ? { ...current, missionTumbler: done } : { ...current, missionTeloBag: done });
 }

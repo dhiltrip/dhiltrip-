@@ -12,6 +12,8 @@ const sections = [
     title: "Privacy Policy",
     body: [
       "We collect the details you give us when you contact us or join a trip, such as your name, email, phone number, booking code, and trip activity including points and visited destinations.",
+      "When you book in the app we also collect your country, passport number, WhatsApp number, meeting point and a photo of your bank transfer. We use them only to check your payment and arrange your trip. Only our admins can see them, and you can ask us to delete them after your trip.",
+      "During a trip your guide records the number and weight of the plastic bottles you collect, and when collected waste is delivered to our partner waste bank. We show these as your personal impact and as community totals without your name.",
       "We do not use your device location. Places on the map are ticked by you. If you scan a code, the camera is used on your device to read it. We do not store camera images.",
       "We use this information to run your trip, record your points, and respond to you. We do not sell your data. Trips and accounts for children require the consent of a parent or guardian.",
       "If you choose a language other than English, the page text is sent to Google Translate. You can ask us to access, correct, or delete your data at dhiltrip@gmail.com.",
