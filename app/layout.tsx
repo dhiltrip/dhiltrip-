@@ -19,7 +19,7 @@ const fredoka = Fredoka({
   variable: "--font-fredoka",
 });
 
-const title = "Dhil Trip Explorations - Sustainable Healing Tourism";
+const title = "DhilTrip Explorations - Sustainable Healing Tourism";
 const description =
   "Sustainable one-day trips around Yogyakarta with the Leave No Trace Challenge: collect plastic bottles, earn points, and redeem local recycled souvenirs.";
 

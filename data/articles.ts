@@ -17,7 +17,7 @@ export type Article = {
   updatedAt: number | null;
 };
 
-export const ARTICLE_AUTHOR = "Dhil Trip Team";
+export const ARTICLE_AUTHOR = "DhilTrip Team";
 export const ARTICLE_BODY_MAX = 20000;
 
 /** First sentences of the body, without the formatting marks, for cards and link previews. */

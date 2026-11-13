@@ -31,7 +31,7 @@ export function WhyChooseUs() {
             viewport={{ once: true }}
             className="text-4xl md:text-5xl font-sora font-bold text-foreground mb-6"
           >
-            Why Travel with <span className="text-primary">Dhil Trip?</span>
+            Why Travel with <span className="text-primary">DhilTrip?</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}

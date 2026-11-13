@@ -44,7 +44,7 @@ function RequestCard({ item, onChanged }: { item: BookingRequest; onChanged: () 
   };
 
   const codeMessage = item.code
-    ? `Hello ${item.fullName}, your Dhil Trip booking for ${item.packageTitle} on ${item.date} is confirmed!\nYour booking code: ${item.code}\nOpen dhiltrip.com, go to Profile → My bookings and tap "Join this trip" (or enter the code on the package). See you at ${item.meetingPoint}!`
+    ? `Hello ${item.fullName}, your DhilTrip booking for ${item.packageTitle} on ${item.date} is confirmed!\nYour booking code: ${item.code}\nOpen dhiltrip.com, go to Profile → My bookings and tap "Join this trip" (or enter the code on the package). See you at ${item.meetingPoint}!`
     : "";
 
   return (

@@ -31,7 +31,7 @@ function BookingCard({ item }: { item: BookingRequest }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const joined = state?.bookingCode === item.code;
-  const ask = `https://wa.me/${BOOKING_WHATSAPP}?text=${encodeURIComponent(`Hello Dhil Trip, about my booking ${requestRef(item.id)} (${item.packageTitle}, ${item.date}).`)}`;
+  const ask = `https://wa.me/${BOOKING_WHATSAPP}?text=${encodeURIComponent(`Hello DhilTrip, about my booking ${requestRef(item.id)} (${item.packageTitle}, ${item.date}).`)}`;
 
   const join = async () => {
     if (!item.code) return;

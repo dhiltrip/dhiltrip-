@@ -16,6 +16,8 @@ export type Redemption = {
   rewardId: string;
   points: number;
   createdAt: string;
+  /** The booking code of the trip it was redeemed on (one souvenir per trip). */
+  bookingCode?: string | null;
 };
 
 export type ChallengeState = {

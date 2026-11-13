@@ -18,9 +18,9 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = await publishedArticle(slug);
-  if (!article) return { title: "Article not found | Dhil Trip Explorations" };
+  if (!article) return { title: "Article not found | DhilTrip Explorations" };
   return {
-    title: `${article.title} | Dhil Trip Explorations`,
+    title: `${article.title} | DhilTrip Explorations`,
     description: article.excerpt,
     openGraph: {
       title: article.title,

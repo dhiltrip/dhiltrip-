@@ -7,6 +7,7 @@ import { CalendarCheck, Check, ChevronRight, Loader2, Map as MapIcon, Maximize2,
 import { HomeExtras } from "@/components/HomeExtras";
 import { TripReview } from "@/components/TripReview";
 import { HowItWorksButton, TelobagInfoButton } from "@/components/InfoSheets";
+import { DhilWay } from "@/components/DhilWay";
 import { PosterViewer } from "@/components/PosterViewer";
 import { POINTS, cheapestReward, nextRewardFor, type ChallengePackage } from "@/data/challenge";
 import { usePackage, usePackages } from "@/lib/packages";
@@ -250,6 +251,8 @@ function ChoosePackage() {
         </p>
         <HowItWorksButton tone="light" className="mt-4" />
       </section>
+
+      <DhilWay />
 
       <PackageCatalog title="Choose your travel package" subtitle="Package Include Tour Guide" items={packages} />
     </div>

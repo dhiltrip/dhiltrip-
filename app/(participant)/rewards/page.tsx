@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Gift } from "lucide-react";
 import { nextRewardFor, rewards, whatsappLink, type Reward, type RewardCategory } from "@/data/challenge";
 import { redeemReward, useChallenge, useRewardStock, type RedeemResult } from "@/lib/participant";
 
@@ -66,7 +67,9 @@ export default function RewardsPage() {
 
   const visible = rewards.filter((reward) => filter === "All" || reward.category === filter);
   const next = nextRewardFor(state.points);
-  const affordableCount = rewards.filter((reward) => reward.points <= state.points && stock[reward.id] !== 0).length;
+  // One souvenir per trip: the trip's booking code (or "no trip") already has a redemption.
+  const usedThisTrip = state.redemptions.some((item) => (item.bookingCode ?? null) === (state.bookingCode ?? null));
+  const affordableCount = usedThisTrip ? 0 : rewards.filter((reward) => reward.points <= state.points && stock[reward.id] !== 0).length;
 
   return (
     <div className="space-y-5 px-5 pt-6">
@@ -105,6 +108,18 @@ export default function RewardsPage() {
         )}
       </section>
 
+      <p
+        key={usedThisTrip ? "used" : "rule"}
+        className={`flex items-start gap-2 rounded-2xl px-4 py-3 text-pretty text-sm ${
+          usedThisTrip ? "bg-[#FBF0C4] text-[#5A4300]" : "bg-white text-[#12372A] shadow-sm"
+        }`}
+      >
+        <Gift className="mt-0.5 h-4 w-4 shrink-0" />
+        {usedThisTrip
+          ? "You already redeemed your souvenir for this trip. You can redeem again on your next trip, or buy one."
+          : "One trip, one souvenir: you can redeem a maximum of 1 item per trip."}
+      </p>
+
       <div className="flex flex-wrap gap-2">
         {filters.map((item) => (
           <button
@@ -124,17 +139,18 @@ export default function RewardsPage() {
         {visible.map((reward, index) => {
           const missing = reward.points - state.points;
           const soldOut = stock[reward.id] === 0;
-          const affordable = missing <= 0 && !soldOut;
+          const affordable = missing <= 0 && !soldOut && !usedThisTrip;
           return (
             <article key={reward.id} className="flex flex-col rounded-3xl bg-[#8FB05E] p-2 shadow-sm transition-transform hover:-translate-y-0.5">
-              <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#DDE5BE]">
+              {/* Product photos are 3:4; other shapes are shown whole on the dark green instead of cropped. */}
+              <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-[#0D2A1F]">
                 <Image
                   src={reward.image}
                   alt={reward.label}
                   fill
                   sizes="220px"
                   loading={index < 4 ? "eager" : "lazy"}
-                  className={`object-cover ${soldOut ? "grayscale" : ""}`}
+                  className={`object-contain ${soldOut ? "grayscale" : ""}`}
                 />
                 {soldOut ? (
                   <span key="out" className="absolute left-2 top-2 rounded-full px-2.5 py-1 text-[11px] font-bold text-white shadow" style={{ backgroundColor: "#A33A12" }}>
@@ -174,7 +190,7 @@ export default function RewardsPage() {
                   redeem
                 </button>
                 <a
-                  href={whatsappLink(`Hello Dhil Trip, I would like to purchase: ${reward.label} (${reward.priceLabel}).`)}
+                  href={whatsappLink(`Hello DhilTrip, I would like to purchase: ${reward.label} (${reward.priceLabel}).`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex min-h-11 items-center justify-center rounded-2xl bg-[#14281C] px-3 text-center font-fredoka text-sm font-semibold text-white [overflow-wrap:break-word]"

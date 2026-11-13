@@ -101,7 +101,7 @@ export function SignInScreen() {
         />
         <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[#8DB255]/25 blur-3xl" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 -left-20 h-96 w-96 rounded-full bg-[#C2A44E]/20 blur-3xl" />
-        <Image src="/challenge/logo.webp" alt="Dhil Trip Explorations" width={778} height={319} priority className="relative h-auto w-56" />
+        <Image src="/challenge/logo.webp" alt="DhilTrip Explorations" width={778} height={319} priority className="relative h-auto w-56" />
         <div className="relative mt-auto max-w-lg">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#ADBC9F]">Leave No Trace Challenge</p>
           <h2 className="title-page mt-3 text-5xl leading-[1.05]">Explore Jogja and leave it cleaner.</h2>
@@ -127,7 +127,7 @@ export function SignInScreen() {
 
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pb-10 pt-2 lg:flex-none lg:py-10">
         <div className="mx-auto rounded-3xl bg-[#0D2A1F] px-6 py-3 shadow-lg lg:hidden">
-          <Image src="/challenge/logo.webp" alt="Dhil Trip Explorations" width={778} height={319} priority className="h-auto w-44" />
+          <Image src="/challenge/logo.webp" alt="DhilTrip Explorations" width={778} height={319} priority className="h-auto w-44" />
         </div>
         <p className="mt-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-[#436850] lg:hidden">Leave No Trace Challenge</p>
 

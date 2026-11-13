@@ -102,7 +102,7 @@ const STEPS: ReactNode[] = [
   <>Your guide takes the waste to our partner waste bank and marks it &ldquo;Delivered&rdquo;. The amount is added to the impact total.</>,
 ];
 
-/** "How it works" link with an (i) icon that opens the nine steps of a Dhil Trip. */
+/** "How it works" link with an (i) icon that opens the nine steps of a DhilTrip. */
 export function HowItWorksButton({ tone = "dark", className = "" }: { tone?: "dark" | "light"; className?: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -118,7 +118,7 @@ export function HowItWorksButton({ tone = "dark", className = "" }: { tone?: "da
         How it works
       </button>
       {open && (
-        <Sheet title="How a Dhil Trip works" onClose={() => setOpen(false)}>
+        <Sheet title="How a DhilTrip works" onClose={() => setOpen(false)}>
           <ol className="space-y-3">
             {STEPS.map((step, index) => (
               <li key={index} className="flex gap-3">

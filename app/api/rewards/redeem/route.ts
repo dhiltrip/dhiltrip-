@@ -21,6 +21,12 @@ export async function POST(request: Request) {
       const [userSnap, stockSnap] = await Promise.all([tx.get(userRef), tx.get(stockRef)]);
       const user = userSnap.data();
       if (!user) throw new HttpError(409, "Please sign in again.");
+      // One souvenir per trip.
+      const tripCode = (user.trip as TripDoc | null)?.code ?? null;
+      const already = await tx.get(
+        db.collection("redemptions").where("uid", "==", session.uid).where("bookingCode", "==", tripCode).limit(1),
+      );
+      if (!already.empty) throw new HttpError(409, "You can redeem only 1 souvenir per trip, and you already have one for this trip.");
       const points = Number(user.points ?? 0);
       if (points < reward.points) throw new HttpError(409, `You need ${reward.points - points} more points.`);
       // No stock document means the reward is not limited.

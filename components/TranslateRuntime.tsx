@@ -83,7 +83,7 @@ function nudgeTranslator() {
   document.getElementById(NUDGE_ID)?.remove();
   const nudge = document.createElement("span");
   nudge.id = NUDGE_ID;
-  nudge.textContent = "Welcome to Dhil Trip";
+  nudge.textContent = "Welcome to DhilTrip";
   nudge.setAttribute("aria-hidden", "true");
   nudge.style.cssText =
     "position:fixed;left:0;bottom:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none";

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import jsQR from "jsqr";
@@ -62,6 +63,10 @@ function EcoChecklist() {
   const [error, setError] = useState<string | null>(null);
   const joined = Boolean(state?.packageId);
   const toggle = async (item: "tumbler" | "teloBag", done: boolean) => {
+    if (!joined) {
+      setError("join");
+      return;
+    }
     setBusy(item);
     setError(null);
     const result = await setMission(item, done);
@@ -81,14 +86,14 @@ function EcoChecklist() {
       <ul className="mt-3 space-y-2">
         <MissionItem
           done={state?.missionTumbler === true}
-          disabled={!joined || busy !== null}
+          disabled={busy !== null}
           onToggle={() => void toggle("tumbler", !state?.missionTumbler)}
         >
           I brought my own drinking bottle (tumbler)
         </MissionItem>
         <MissionItem
           done={state?.missionTeloBag === true}
-          disabled={!joined || busy !== null}
+          disabled={busy !== null}
           onToggle={() => void toggle("teloBag", !state?.missionTeloBag)}
           info={<TelobagInfoButton />}
         >
@@ -109,7 +114,14 @@ function EcoChecklist() {
           ? "Tick these for yourself. Points are added when you scan your guide's QR code."
           : "Join a trip on Home first, then tick your mission here."}
       </p>
-      {error && <p className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-[#A33A12]">{error}</p>}
+      {error === "join" ? (
+        <p className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-[#A33A12]">
+          Join a trip first: choose your package on Home and enter your booking code.{" "}
+          <Link href="/" className="underline">Go to Home</Link>
+        </p>
+      ) : (
+        error && <p className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-[#A33A12]">{error}</p>
+      )}
     </section>
   );
 }

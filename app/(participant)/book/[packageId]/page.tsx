@@ -161,7 +161,7 @@ export default function BookPage({ params }: { params: Promise<{ packageId: stri
       return;
     }
     const message = [
-      `Hello Dhil Trip, I just booked ${pkg.title} in the app.`,
+      `Hello DhilTrip, I just booked ${pkg.title} in the app.`,
       `Booking ref: ${result.ref}`,
       `Name: ${name}`,
       `Tour date: ${date}`,
@@ -343,7 +343,7 @@ export default function BookPage({ params }: { params: Promise<{ packageId: stri
       <label className="flex items-start gap-3 rounded-2xl bg-white p-4 text-sm shadow-sm">
         <input type="checkbox" required checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#03603F]" />
         <span className="text-pretty">
-          I agree that Dhil Trip uses these details only to arrange my trip, as described in the{" "}
+          I agree that DhilTrip uses these details only to arrange my trip, as described in the{" "}
           <Link href="/legal#privacy" className="font-semibold text-[#03603F] underline">Privacy Policy</Link>.
         </span>
       </label>

@@ -1,5 +1,5 @@
 /**
- * Sends a copy of a contact message to the Dhil Trip inbox through Web3Forms.
+ * Sends a copy of a contact message to the DhilTrip inbox through Web3Forms.
  * The access key is meant to be public; Web3Forms only ever delivers to the
  * email address the key was created for.
  */
@@ -14,7 +14,7 @@ export async function sendEmailCopy(subject: string, fields: Record<string, stri
     const response = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ access_key: ACCESS_KEY, subject, from_name: "Dhil Trip website", ...fields }),
+      body: JSON.stringify({ access_key: ACCESS_KEY, subject, from_name: "DhilTrip website", ...fields }),
     });
     const result = (await response.json().catch(() => null)) as { success?: boolean } | null;
     return response.ok && result?.success === true;

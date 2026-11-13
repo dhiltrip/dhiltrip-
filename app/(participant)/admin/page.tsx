@@ -57,7 +57,7 @@ const prettyDate = (date: string) =>
   new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 
 function shareText(booking: Booking, title = "your trip") {
-  return `Your Dhil Trip booking code for ${title} on ${booking.date}: ${booking.code}\nOpen dhiltrip.com, choose the package, and enter this code to join the Leave No Trace Challenge.`;
+  return `Your DhilTrip booking code for ${title} on ${booking.date}: ${booking.code}\nOpen dhiltrip.com, choose the package, and enter this code to join the Leave No Trace Challenge.`;
 }
 
 /** Round minus / value / plus control. */
@@ -448,7 +448,7 @@ export default function AdminPage() {
     return (
       <div className="px-5 pt-10 text-center lg:pt-20">
         <h1 className="title-page text-black">Admin</h1>
-        <p className="mt-2 text-pretty text-sm text-[#436850]">This page is only for Dhil Trip admins.</p>
+        <p className="mt-2 text-pretty text-sm text-[#436850]">This page is only for DhilTrip admins.</p>
       </div>
     );
   }

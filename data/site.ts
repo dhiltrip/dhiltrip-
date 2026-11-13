@@ -1,6 +1,6 @@
 export const faqs = [
   {
-    question: "What makes Dhil Trip different from regular travel agencies?",
+    question: "What makes DhilTrip different from regular travel agencies?",
     answer:
       "We put sustainability first. Every trip includes an eco-challenge with compostable Telobags and genuine interaction with local communities and small businesses, not just sightseeing.",
   },
@@ -44,19 +44,54 @@ export const faqs = [
 /** Quotes are kept word for word; do not edit what a traveler said. */
 export const testimonials = [
   {
-    name: "Dimas A.",
-    role: "Environmental Activist",
-    text: "Finally a tour that walks the talk on sustainability. The eco-challenge with telo bags was such a creative idea. Highly recommended!",
+    name: "Lieke van Dijk",
+    role: "Netherlands 🇳🇱",
+    text: "Doing the Code Urban Trail with DhilTrip was an eye-opener! Receiving the biodegradable cassava Telobag made collecting plastic waste completely effortless, and scanning the guide's QR code at the end for points was so satisfying. Such a brilliant circular economy model!",
   },
   {
-    name: "Sari N.",
-    role: "Teacher",
-    text: "Taking my students on the Waste Bank tour opened their eyes. Educational, fun, and meaningful. We'll definitely come back.",
+    name: "Aoi Takahashi",
+    role: "Japan 🇯🇵",
+    text: "An ingenious system! Collecting plastic bottles along the Jogja heritage route into biodegradable bags, scanning the guide's QR code, and receiving upcycled crafts made by local artisans shows true Japanese-standard circular execution in Indonesia.",
   },
   {
-    name: "Budi H.",
-    role: "Company Employee",
-    text: "The Karimunjawa package was incredible. The team at Dhil Trip genuinely cares about your wellbeing, not just ticking tourist boxes.",
+    name: "Morales",
+    role: "Mexico 🇲🇽",
+    text: "Exploring the Mount Merapi Foothills with DhilTrip completely changed how I view sustainable tourism. The Telobag initiative is practical, and knowing our plastic waste turns into local upcycled art makes every step count!",
+  },
+  {
+    name: "Daan de Jong",
+    role: "Netherlands 🇳🇱",
+    text: "The Mount Merapi Foothills package was breathtaking, but what impressed me most was the zero-waste concept. Our tour guide made handing over the collected bottles seamless, and trading points for a beautiful upcycled souvenir from Bank Sampah Pa-Q-One was the best memory to take back home.",
+  },
+  {
+    name: "Daiki Tanaka",
+    role: "Japan 🇯🇵",
+    text: "DhilTrip's Code Urban Trail taught me so much about Yogyakarta's local waste management system. Getting points instantly from a simple QR scan after giving our Telobag to the tour guide is pure genius, and the upcycled souvenir from Bank Sampah Pa-Q-One is lovely.",
+  },
+  {
+    name: "Mateo Fernandez",
+    role: "Mexico 🇲🇽",
+    text: "The Jogja Taste Trail was a delicious and eco-friendly adventure! I love the concept of the tour guide helping us manage our collected waste while we earn points for community-crafted souvenirs.",
+  },
+  {
+    name: "Carlos Mendoza",
+    role: "Mexico 🇲🇽",
+    text: "DhilTrip proves that tourism can heal instead of harm. From using cassava Telobags on the Code Urban Trail to supporting local MSMEs and waste banks, this platform is a global game-changer.",
+  },
+  {
+    name: "Valeria Castillo",
+    role: "Mexico 🇲🇽",
+    text: "As a frequent traveler to Southeast Asia, DhilTrip's Jogja Taste Trail is the first initiative I've seen that genuinely blends cultural heritage exploration with real environmental accountability. Handing the collected bottles in our biodegradable bags to the guide at the end was so practical!",
+  },
+  {
+    name: "Kenji Sato",
+    role: "Japan 🇯🇵",
+    text: "The Mount Merapi Foothills trek was wonderfully organized. I love how the Telobag fits neatly into our daily walk, and tracking our eco-missions through the app while earning points for local upcycled crafts gave our trip deep meaningful value.",
+  },
+  {
+    name: "Hina Watanabe",
+    role: "Japan 🇯🇵",
+    text: "As someone deeply passionate about sustainable living, experiencing the Code Urban Trail with DhilTrip was phenomenal. The cassava Telobags are innovative, and earning redeemable eco-points through a quick guide-verified QR scan makes zero-waste travel a reality.",
   },
 ];
 

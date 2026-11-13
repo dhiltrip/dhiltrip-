@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Legal | Dhil Trip Explorations",
-  description: "Privacy, terms, cookie, and cancellation information for Dhil Trip Explorations.",
+  title: "Legal | DhilTrip Explorations",
+  description: "Privacy, terms, cookie, and cancellation information for DhilTrip Explorations.",
 };
 
 const sections = [

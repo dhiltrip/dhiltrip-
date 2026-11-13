@@ -52,7 +52,7 @@ export function PartnerSection() {
             </p>
           </div>
           <p className="text-pretty text-sm leading-relaxed">
-            {NAME}is the waste bank partner of Dhil Trip Explorations. It was founded out of concern about pollution in the Winongo
+            {NAME}is the waste bank partner of DhilTrip Explorations. It was founded out of concern about pollution in the Winongo
             River.
           </p>
           <p className="text-pretty text-sm leading-relaxed">

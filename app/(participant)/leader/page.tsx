@@ -23,7 +23,7 @@ type PendingRedemption = {
 /** Message for sending a bottle code to a traveler who isn't next to the tour leader. */
 function bottleCodeMessage(code: string, points: number) {
   return [
-    `Your Dhil Trip bottle code (+${points} points): ${code}`,
+    `Your DhilTrip bottle code (+${points} points): ${code}`,
     "Open dhiltrip.com, tap Eco Mission, and type this code in the code box.",
     firebaseEnabled ? "It works once, within 2 hours." : "It works once.",
   ].join("\n");
@@ -328,7 +328,7 @@ export default function LeaderPage() {
     return (
       <div className="px-5 pt-10 text-center lg:pt-20">
         <h1 className="title-page text-black">Tour leader</h1>
-        <p className="mt-2 text-pretty text-sm text-[#436850]">This page is only for Dhil Trip tour leaders.</p>
+        <p className="mt-2 text-pretty text-sm text-[#436850]">This page is only for DhilTrip tour leaders.</p>
       </div>
     );
   }

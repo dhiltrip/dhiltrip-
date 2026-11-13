@@ -21,8 +21,8 @@ export function ArticleHeader({ back = "/", backLabel = "Home" }: { back?: strin
           <ArrowLeft className="h-5 w-5 shrink-0" />
           <span className="truncate">{backLabel}</span>
         </Link>
-        <Link href="/" aria-label="Dhil Trip Explorations home" className="shrink-0">
-          <Image src="/challenge/logo.webp" alt="Dhil Trip Explorations" width={778} height={319} priority className="h-10 w-auto" />
+        <Link href="/" aria-label="DhilTrip Explorations home" className="shrink-0">
+          <Image src="/challenge/logo.webp" alt="DhilTrip Explorations" width={778} height={319} priority className="h-10 w-auto" />
         </Link>
         <LanguageSwitcher />
       </div>

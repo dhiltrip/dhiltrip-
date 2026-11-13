@@ -6,6 +6,8 @@ import { Check, Circle, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { type Stop } from "@/data/challenge";
 import { findIn, useAllPackages, usePackages } from "@/lib/packages";
+import { DhilWay } from "@/components/DhilWay";
+import { PartnerSection } from "@/components/PartnerSection";
 import { chooseRoute, toggleVisited, useChallenge } from "@/lib/participant";
 
 const ChallengeMap = dynamic(
@@ -111,8 +113,9 @@ export default function MapPage() {
 
   return (
     <div className="space-y-6 px-5 pt-6">
+      <h1 translate="no" className="notranslate title-page text-center text-black">Responsible Travel Trail</h1>
       <section className="rounded-3xl bg-gradient-to-br from-[#8DB255] to-[#3F5F2A] p-5 text-white shadow">
-        <h1 className="title-card">&ldquo;Leave No Trace Challenge&rdquo;</h1>
+        <h2 className="title-card">&ldquo;Leave No Trace Challenge&rdquo;</h2>
         <p className="mt-3 font-semibold">How to participate:</p>
         <ol className="mt-1 list-decimal space-y-1.5 pl-5 text-pretty text-sm leading-snug">
           <li>Tourist adopt eco-friendly habits bringing a<span translate="no" className="notranslate mx-[0.25em]">tumbler</span>and using<span translate="no" className="notranslate mx-[0.25em]">Telobag</span>provided by us</li>
@@ -121,6 +124,8 @@ export default function MapPage() {
           <li>Redeem Rewards exchange your accumulated points for unique, high-quality recycled waste souvenirs.</li>
         </ol>
       </section>
+
+      <DhilWay />
 
       {preview && (
         <div>
@@ -203,6 +208,8 @@ export default function MapPage() {
           </div>
         </section>
       )}
+
+      <PartnerSection />
     </div>
   );
 }

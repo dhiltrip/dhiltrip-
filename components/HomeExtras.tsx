@@ -43,7 +43,7 @@ function CustomTripSheet({ onClose }: { onClose: () => void }) {
       message: String(data.get("message") ?? ""),
     };
     const text = [
-      "Hello Dhil Trip, I would like a custom trip.",
+      "Hello DhilTrip, I would like a custom trip.",
       `Name: ${fields.name}`,
       `Email: ${fields.email}`,
       `Phone: ${fields.phone}`,

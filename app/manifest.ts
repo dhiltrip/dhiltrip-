@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
 
-/** Lets phones add the site to the home screen with the Dhil Trip icon and colors. */
+/** Lets phones add the site to the home screen with the DhilTrip icon and colors. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Dhil Trip Explorations",
-    short_name: "Dhil Trip",
+    name: "DhilTrip Explorations",
+    short_name: "DhilTrip",
     description: "Explore Jogja and join the Leave No Trace Challenge.",
     start_url: "/",
     display: "standalone",

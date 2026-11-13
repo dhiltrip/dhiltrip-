@@ -11,10 +11,10 @@ import { useChallenge, useLastGain, type ChallengeState, type PointsGain } from 
 import { initialsOf } from "@/lib/initials";
 
 const tabs = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/map", label: "Map", icon: MapIcon },
-  { href: "/rewards", label: "Rewards", icon: Award },
-  { href: "/profile", label: "Profile", icon: User },
+  { href: "/", label: "Home", icon: Home, name: false },
+  { href: "/map", label: "Responsible Travel Trail", icon: MapIcon, name: true },
+  { href: "/rewards", label: "Rewards", icon: Award, name: false },
+  { href: "/profile", label: "Green Impact Dashboard", icon: User, name: true },
 ];
 
 function TabLink({ tab, active }: { tab: (typeof tabs)[number]; active: boolean }) {
@@ -28,7 +28,13 @@ function TabLink({ tab, active }: { tab: (typeof tabs)[number]; active: boolean 
       }`}
     >
       <Icon className="h-6 w-6 shrink-0" />
-      <span className="line-clamp-2 max-w-full px-0.5 text-center text-[10px] font-semibold leading-[1.1] [overflow-wrap:anywhere]">{tab.label}</span>
+      {/* Feature names stay the same in every language; plain words are translated. */}
+      <span
+        translate={tab.name ? "no" : undefined}
+        className={`line-clamp-2 max-w-full px-0.5 text-center text-[10px] font-semibold leading-[1.1] ${tab.name ? "notranslate" : "[overflow-wrap:anywhere]"}`}
+      >
+        {tab.label}
+      </span>
     </Link>
   );
 }
@@ -41,7 +47,7 @@ type SidebarProps = {
 
 /** Laptop and desktop navigation; phones keep the bottom bar from the prototype. */
 function DesktopSidebar({ state, gain, pathname }: SidebarProps) {
-  const item = (href: string, label: string, Icon: typeof Home) => {
+  const item = (href: string, label: string, Icon: typeof Home, name = false) => {
     const active = pathname === href;
     return (
       <Link
@@ -53,7 +59,9 @@ function DesktopSidebar({ state, gain, pathname }: SidebarProps) {
         }`}
       >
         <Icon className="h-5 w-5 shrink-0" />
-        <span className="min-w-0">{label}</span>
+        <span translate={name ? "no" : undefined} className={`min-w-0 leading-tight ${name ? "notranslate" : ""}`}>
+          {label}
+        </span>
       </Link>
     );
   };
@@ -62,14 +70,14 @@ function DesktopSidebar({ state, gain, pathname }: SidebarProps) {
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-[#0D2A1F] px-4 py-6 text-white lg:flex">
       <div className="flex items-center justify-between gap-2 px-1">
         <Link href="/" className="shrink-0">
-          <Image src="/challenge/logo.webp" alt="Dhil Trip Explorations" width={778} height={319} className="h-12 w-auto" />
+          <Image src="/challenge/logo.webp" alt="DhilTrip Explorations" width={778} height={319} className="h-12 w-auto" />
         </Link>
         <LanguageSwitcher align="left" />
       </div>
 
       <nav className="mt-8 space-y-1.5" aria-label="Main">
         {item("/", "Home", Home)}
-        {item("/map", "Map", MapIcon)}
+        {item("/map", "Responsible Travel Trail", MapIcon, true)}
         <Link
           href="/scan"
           aria-current={pathname === "/scan" ? "page" : undefined}
@@ -82,7 +90,7 @@ function DesktopSidebar({ state, gain, pathname }: SidebarProps) {
           <span translate="no" className="notranslate">Eco Mission</span>
         </Link>
         {item("/rewards", "Rewards", Award)}
-        {item("/profile", "Profile", User)}
+        {item("/profile", "Green Impact Dashboard", User, true)}
       </nav>
 
       <div className="mt-auto space-y-3">
@@ -134,7 +142,7 @@ export default function ParticipantLayout({ children }: { children: ReactNode })
           <Link href="/" className="shrink-0">
             <Image
               src="/challenge/logo.webp"
-              alt="Dhil Trip Explorations"
+              alt="DhilTrip Explorations"
               width={778}
               height={319}
               priority

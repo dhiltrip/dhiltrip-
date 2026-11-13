@@ -135,6 +135,7 @@ function start() {
               rewardId: String(value.rewardId),
               points: Number(value.points ?? 0),
               createdAt: new Date((value.createdAt as Timestamp | undefined)?.toMillis() ?? Date.now()).toISOString(),
+              bookingCode: (value.bookingCode as string | null | undefined) ?? null,
             };
           })
           .sort((a, b) => a.createdAt.localeCompare(b.createdAt));

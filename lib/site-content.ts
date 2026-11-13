@@ -139,7 +139,7 @@ const articleStore = liveStore<Article>("dhiltrip-articles", [], (emit) =>
               body: "",
               cover: (data.cover as string | null) ?? null,
               coverFocus: readFocus(data.coverFocus),
-              author: String(data.author ?? "Dhil Trip Team"),
+              author: String(data.author ?? "DhilTrip Team"),
               published: true,
               publishedAt: toMillisOrNull(data.publishedAt),
               updatedAt: toMillisOrNull(data.updatedAt),

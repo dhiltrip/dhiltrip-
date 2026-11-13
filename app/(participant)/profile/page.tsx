@@ -94,7 +94,7 @@ function VerifyEmailCard({ role, email }: { role: "leader" | "admin"; email: str
   );
 }
 
-/** Totals of every Dhil Trip traveler, plus where the waste goes. */
+/** Totals of every DhilTrip traveler, plus where the waste goes. */
 function CommunityImpact() {
   const impact = useImpact();
   const items = [
@@ -105,7 +105,7 @@ function CommunityImpact() {
   ];
   return (
     <section className="rounded-3xl bg-white p-5 shadow-sm">
-      <h2 className="title-card text-xl">All Dhil Trip travelers</h2>
+      <h2 className="title-card text-xl">All DhilTrip travelers</h2>
       <p className="mt-0.5 text-pretty text-xs text-[#436850]">Our community impact so far, updated after every scan and delivery.</p>
       <dl className="mt-3 grid grid-cols-2 gap-2.5">
         {items.map((item) => (
@@ -165,6 +165,7 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-5 px-5 pt-6 lg:mx-auto lg:max-w-2xl">
+      <h1 translate="no" className="notranslate title-page text-center text-black">Green Impact Dashboard</h1>
       <section className="relative overflow-hidden rounded-[2rem] bg-[#0D2A1F] px-5 pb-6 pt-7 text-center text-white shadow-lg">
         <div
           aria-hidden="true"
@@ -180,7 +181,7 @@ export default function ProfilePage() {
           >
             {initialsOf(state.user.name)}
           </div>
-          <h1 className="title-page mt-3 capitalize">{state.user.name}</h1>
+          <h2 className="title-page mt-3 capitalize">{state.user.name}</h2>
           <p className="mt-0.5 break-all text-xs text-[#ADBC9F]">{state.user.email}</p>
           {pkg && (
             <p className="mx-auto mt-3 inline-flex max-w-full items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold">

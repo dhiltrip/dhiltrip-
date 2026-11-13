@@ -7,8 +7,8 @@ import { ArticleHeader } from "@/components/ArticleBits";
 export const revalidate = 600;
 
 export const metadata: Metadata = {
-  title: "Articles | Dhil Trip Explorations",
-  description: "Insights and tips for sustainable travel in Yogyakarta from the Dhil Trip team.",
+  title: "Articles | DhilTrip Explorations",
+  description: "Insights and tips for sustainable travel in Yogyakarta from the DhilTrip team.",
 };
 
 export default async function ArticlesPage() {
