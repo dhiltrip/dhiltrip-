@@ -136,6 +136,7 @@ function start() {
               points: Number(value.points ?? 0),
               createdAt: new Date((value.createdAt as Timestamp | undefined)?.toMillis() ?? Date.now()).toISOString(),
               bookingCode: (value.bookingCode as string | null | undefined) ?? null,
+              purchase: value.purchase === true,
             };
           })
           .sort((a, b) => a.createdAt.localeCompare(b.createdAt));

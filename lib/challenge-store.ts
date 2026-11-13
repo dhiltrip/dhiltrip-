@@ -18,6 +18,8 @@ export type Redemption = {
   createdAt: string;
   /** The booking code of the trip it was redeemed on (one souvenir per trip). */
   bookingCode?: string | null;
+  /** Bought with money: it does not use up the free souvenir for the trip. */
+  purchase?: boolean;
 };
 
 export type ChallengeState = {

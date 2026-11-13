@@ -5,6 +5,7 @@ import { collection, doc, onSnapshot, query, where, type Timestamp } from "fireb
 import { builtInMemories, builtInReviews, type Memory, type Review, type ReviewStatus } from "@/data/content";
 import type { Article } from "@/data/articles";
 import type { BookingRequest } from "@/data/booking";
+import type { RewardOrder } from "@/data/reward-order";
 import { readFocus } from "@/data/focus";
 import { clientAuth, clientDb, firebaseEnabled } from "@/lib/firebase/client";
 
@@ -230,6 +231,45 @@ export function useMyBookingRequests() {
             .sort((a, b) => b.createdAt - a.createdAt),
         ),
       (error) => console.warn("booking requests listener:", error.code),
+    );
+  }, [uid]);
+  return uid ? items : [];
+}
+
+/** The signed-in traveler's souvenir orders (status and total), newest first. */
+export function useMyRewardOrders() {
+  const [items, setItems] = useState<RewardOrder[]>([]);
+  const uid = firebaseEnabled ? clientAuth().currentUser?.uid : undefined;
+  useEffect(() => {
+    if (!uid) return;
+    return onSnapshot(
+      query(collection(clientDb(), "rewardOrders"), where("uid", "==", uid)),
+      (snap) =>
+        setItems(
+          snap.docs
+            .map((item) => {
+              const data = item.data();
+              return {
+                id: item.id,
+                uid: String(data.uid ?? ""),
+                fullName: String(data.fullName ?? ""),
+                email: String(data.email ?? ""),
+                whatsapp: String(data.whatsapp ?? ""),
+                rewardId: String(data.rewardId ?? ""),
+                rewardLabel: String(data.rewardLabel ?? ""),
+                kind: data.kind === "topup" ? "topup" : "buy",
+                pointsUsed: Number(data.pointsUsed ?? 0),
+                totalText: String(data.totalText ?? ""),
+                pickup: data.pickup === "office" ? "office" : "trip",
+                bookingCode: (data.bookingCode as string | null) ?? null,
+                status: (data.status as RewardOrder["status"]) ?? "new",
+                adminNote: String(data.adminNote ?? ""),
+                createdAt: toMillis(data.createdAt),
+              } satisfies RewardOrder;
+            })
+            .sort((a, b) => b.createdAt - a.createdAt),
+        ),
+      (error) => console.warn("souvenir orders listener:", error.code),
     );
   }, [uid]);
   return uid ? items : [];

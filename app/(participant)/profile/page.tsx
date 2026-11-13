@@ -9,6 +9,7 @@ import { findRewardIn, useAllRewards } from "@/lib/rewards";
 import { usePackage } from "@/lib/packages";
 import { MyReviews } from "@/components/TripReview";
 import { MyBookings } from "@/components/MyBookings";
+import { MyRewardOrders } from "@/components/MyRewardOrders";
 import { formatWeight, useImpact } from "@/lib/site-content";
 import {
   canLead,
@@ -275,6 +276,8 @@ export default function ProfilePage() {
       )}
 
       <MyBookings />
+
+      <MyRewardOrders />
 
       <MyReviews />
 

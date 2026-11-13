@@ -1,0 +1,260 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { Check, CheckCircle2, Clock, Gift, ImageIcon, Inbox, Loader2, MessageCircle, Trash2, XCircle } from "lucide-react";
+import { focusStyle } from "@/data/focus";
+import { orderRef, type RewardOrder, type RewardOrderStatus } from "@/data/reward-order";
+import { callApi } from "@/lib/firebase/client";
+import { findRewardIn, useAllRewards } from "@/lib/rewards";
+
+const waDigits = (number: string) => number.replace(/[^\d]/g, "").replace(/^0/, "62");
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex justify-between gap-3 py-1.5 text-sm">
+      <dt className="shrink-0 text-[#436850]">{label}</dt>
+      <dd translate="no" className="notranslate min-w-0 break-words text-right font-semibold">{children}</dd>
+    </div>
+  );
+}
+
+function OrderCard({ item, onChanged }: { item: RewardOrder; onChanged: () => void }) {
+  const rewards = useAllRewards();
+  const reward = findRewardIn(rewards, item.rewardId);
+  const [proof, setProof] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [note, setNote] = useState(item.adminNote);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+  const run = async (name: string, body: object, method?: "DELETE") => {
+    setBusy(name);
+    setError(null);
+    const result = await callApi("/api/admin/reward-orders", body, method);
+    setBusy(null);
+    if (result.ok) onChanged();
+    else setError(result.message);
+  };
+
+  const loadProof = async () => {
+    setBusy("proof");
+    const result = await callApi<{ dataUrl: string }>(`/api/admin/reward-orders?proof=${encodeURIComponent(item.id)}`);
+    setBusy(null);
+    if (result.ok) setProof(result.dataUrl);
+    else setError(result.message);
+  };
+
+  const confirmedMessage = `Hello ${item.fullName}, your DhilTrip souvenir order ${orderRef(item.id)} (${item.rewardLabel}) is confirmed. ${
+    item.pickup === "trip" ? "Your tour leader will hand it over at the end of your trip." : "We will tell you when it is ready at our office."
+  } Thank you for supporting local upcycled products!`;
+
+  return (
+    <li className={`rounded-3xl bg-white p-4 shadow-sm ring-1 ${item.status === "new" ? "ring-2 ring-[#C2A44E]" : "ring-[#ADBC9F]/60"}`}>
+      <div className="flex items-start gap-3">
+        <div className="relative aspect-[3/4] w-14 shrink-0 overflow-hidden rounded-xl bg-[#0D2A1F]">
+          {reward && <Image src={reward.image} alt="" fill sizes="56px" className="object-cover" style={focusStyle(reward.imageFocus)} />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <p translate="no" className="notranslate font-fredoka text-lg font-semibold leading-tight">{item.fullName}</p>
+            <span
+              key={item.status}
+              className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                item.status === "new" ? "bg-[#FBF0C4] text-[#5A4300]" : item.status === "confirmed" ? "bg-[#DDE5BE] text-[#03603F]" : "bg-[#A33A12]/10 text-[#A33A12]"
+              }`}
+            >
+              {item.status === "new" ? <Clock className="h-3 w-3" /> : item.status === "confirmed" ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+              {item.status === "new" ? "New" : item.status === "confirmed" ? "Confirmed" : "Rejected"}
+            </span>
+          </div>
+          <p className="text-sm font-semibold leading-snug">{item.rewardLabel}</p>
+          <p className="text-xs text-[#436850]">
+            <span translate="no" className="notranslate font-mono">{orderRef(item.id)}</span> ·{" "}
+            <span translate="no" className="notranslate">{new Date(item.createdAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+          </p>
+        </div>
+      </div>
+
+      <dl className="mt-2 divide-y divide-[#12372A]/10">
+        <Row label="Payment">{item.kind === "topup" ? `${item.pointsUsed} points + ${item.totalText}` : item.totalText}</Row>
+        <Row label="Pick up">{item.pickup === "trip" ? "From the tour leader" : "At the office"}</Row>
+        {item.bookingCode && <Row label="Trip">{item.bookingCode}</Row>}
+        <Row label="Email">{item.email}</Row>
+        <Row label="WhatsApp">
+          <a href={`https://wa.me/${waDigits(item.whatsapp)}`} target="_blank" rel="noopener noreferrer" className="text-[#03603F] underline">
+            {item.whatsapp}
+          </a>
+        </Row>
+      </dl>
+      {item.kind === "topup" && item.status === "new" && (
+        <p className="mt-2 rounded-xl bg-[#F3F4DC] px-3 py-2 text-pretty text-xs text-[#436850]">
+          The traveler&rsquo;s points are on hold. Rejecting gives them back.
+        </p>
+      )}
+
+      <div className="mt-3">
+        {proof ? (
+          // The payment photo comes as a data URL from the admin API.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={proof} alt="Proof of payment" className="max-h-96 w-full rounded-2xl bg-[#F3F4DC] object-contain" />
+        ) : (
+          <button
+            onClick={() => void loadProof()}
+            disabled={busy !== null}
+            className="flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl border border-[#12372A]/30 text-sm font-semibold disabled:opacity-60"
+          >
+            {busy === "proof" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+            View proof of payment
+          </button>
+        )}
+      </div>
+
+      {item.status === "confirmed" && (
+        <a
+          href={`https://wa.me/${waDigits(item.whatsapp)}?text=${encodeURIComponent(confirmedMessage)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-[#03603F] text-sm font-semibold text-white"
+        >
+          <MessageCircle className="h-4 w-4" />
+          Tell the traveler on WhatsApp
+        </a>
+      )}
+
+      {item.status === "new" && (
+        <input
+          value={note}
+          maxLength={200}
+          onChange={(event) => setNote(event.target.value)}
+          placeholder="Note to the traveler (optional), e.g. payment received"
+          aria-label="Note to the traveler"
+          className="mt-3 w-full rounded-xl border border-[#ADBC9F] px-3 py-2.5 text-sm"
+        />
+      )}
+      {item.status !== "new" && item.adminNote && <p className="mt-3 rounded-xl bg-[#F3F4DC] px-3 py-2 text-xs">{item.adminNote}</p>}
+      {error && <p className="mt-2 text-sm font-semibold text-[#A33A12]">{error}</p>}
+
+      {confirmingDelete ? (
+        <div className="mt-3 rounded-2xl bg-[#A33A12]/10 p-3">
+          <p className="text-sm font-semibold text-[#A33A12]">Delete this order and its payment photo for good?</p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button onClick={() => setConfirmingDelete(false)} className="min-h-10 rounded-2xl border border-[#12372A]/30 bg-white text-sm font-semibold">
+              Cancel
+            </button>
+            <button
+              onClick={() => void run("delete", { id: item.id }, "DELETE")}
+              disabled={busy !== null}
+              style={{ backgroundColor: "#A33A12" }}
+              className="flex min-h-10 items-center justify-center gap-1.5 rounded-2xl text-sm font-semibold text-white disabled:opacity-60"
+            >
+              <Trash2 className="h-4 w-4" /> Yes, delete
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {item.status === "new" ? (
+            <>
+              <button
+                onClick={() => void run("confirm", { id: item.id, action: "confirm", note })}
+                disabled={busy !== null}
+                className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#03603F] px-3 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {busy === "confirm" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                Payment received
+              </button>
+              <button
+                onClick={() => void run("reject", { id: item.id, action: "reject", note })}
+                disabled={busy !== null}
+                className="flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-[#A33A12]/40 px-3 text-sm font-semibold text-[#A33A12] disabled:opacity-60"
+              >
+                {busy === "reject" ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+                Reject
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              aria-label="Delete order"
+              className="ml-auto flex h-10 w-10 items-center justify-center rounded-xl text-[#A33A12] ring-1 ring-[#A33A12]/30 hover:bg-[#A33A12]/10"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      )}
+    </li>
+  );
+}
+
+const FILTERS: { id: RewardOrderStatus; label: string }[] = [
+  { id: "new", label: "New" },
+  { id: "confirmed", label: "Confirmed" },
+  { id: "rejected", label: "Rejected" },
+];
+
+/** Souvenirs travelers bought in the app: check the payment, then confirm so the tour leader hands it over. */
+export function RewardOrdersManager() {
+  const [items, setItems] = useState<RewardOrder[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<RewardOrderStatus>("new");
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    callApi<{ items: RewardOrder[] }>("/api/admin/reward-orders").then((result) => {
+      if (cancelled) return;
+      if (result.ok) setItems(result.items);
+      else setError(result.message);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [version]);
+
+  const shown = items?.filter((item) => item.status === filter) ?? [];
+
+  return (
+    <section className="space-y-3">
+      <div className="grid grid-cols-3 gap-1 rounded-2xl bg-white p-1 shadow-sm">
+        {FILTERS.map((item) => {
+          const count = items?.filter((order) => order.status === item.id).length ?? 0;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setFilter(item.id)}
+              aria-pressed={filter === item.id}
+              className={`min-h-10 rounded-xl text-sm font-semibold ${filter === item.id ? "bg-[#0D2A1F] text-white" : "text-[#12372A]"}`}
+            >
+              <span key={item.label}>{item.label}</span>
+              <span translate="no" className="notranslate ml-[0.35em] opacity-70">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="flex items-start gap-1.5 text-pretty text-xs text-[#436850]">
+        <Gift className="mt-px h-3.5 w-3.5 shrink-0" />
+        Check the payment photo, then tap Payment received: the souvenir goes to the tour leader&rsquo;s hand-over list. Rejecting gives back the
+        points and the stock.
+      </p>
+      {error && <p role="alert" className="text-sm font-semibold text-[#A33A12]">{error}</p>}
+      {items === null && !error && (
+        <p className="flex items-center gap-2 text-sm text-[#436850]">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+        </p>
+      )}
+      {items && shown.length === 0 && (
+        <div className="rounded-3xl border-2 border-dashed border-[#ADBC9F] px-5 py-10 text-center">
+          <Inbox className="mx-auto h-8 w-8 text-[#ADBC9F]" />
+          <p className="mt-2 text-sm text-[#436850]">Nothing here.</p>
+        </div>
+      )}
+      <ul className="grid gap-3 lg:grid-cols-2">
+        {shown.map((item) => (
+          <OrderCard key={item.id} item={item} onChanged={() => setVersion((value) => value + 1)} />
+        ))}
+      </ul>
+    </section>
+  );
+}

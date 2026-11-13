@@ -19,6 +19,9 @@ type PendingRedemption = {
   rewardId: string;
   rewardLabel: string;
   bookingCode: string | null;
+  /** What the traveler paid when they bought it, or null when it was redeemed with points only. */
+  paid?: string | null;
+  pickup?: "trip" | "office";
   createdAt: number;
 };
 
@@ -160,6 +163,18 @@ function PendingSouvenirs({ onCount }: { onCount: (count: number) => void }) {
                     </>
                   )}
                 </p>
+                {(item.paid || item.pickup === "office") && (
+                  <p className="mt-1 flex flex-wrap gap-1 text-[11px] font-bold">
+                    {item.paid && (
+                      <span key="paid" className="rounded-full bg-[#DDE5BE] px-2 py-0.5 text-[#03603F]">
+                        Paid<span translate="no" className="notranslate ml-[0.25em]">{item.paid}</span>
+                      </span>
+                    )}
+                    {item.pickup === "office" && (
+                      <span key="office" className="rounded-full bg-[#FBF0C4] px-2 py-0.5 text-[#5A4300]">Picks up at the office</span>
+                    )}
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => void handOver(item.id)}

@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Gift } from "lucide-react";
-import { nextRewardFor, whatsappLink, type Reward } from "@/data/challenge";
+import { nextRewardFor, type Reward } from "@/data/challenge";
+import { canTopUp, quoteOrder } from "@/data/reward-order";
+import { useMyRewardOrders } from "@/lib/site-content";
 import { focusStyle } from "@/data/focus";
 import { redeemReward, useChallenge, useRewardStock, type RedeemResult } from "@/lib/participant";
 import { useRewards } from "@/lib/rewards";
@@ -63,6 +66,7 @@ export default function RewardsPage() {
   const state = useChallenge();
   const stock = useRewardStock();
   const rewards = useRewards();
+  const orders = useMyRewardOrders();
   const language = useSiteLanguage();
   const [filter, setFilter] = useState("All");
   const [redeeming, setRedeeming] = useState<Reward | null>(null);
@@ -74,7 +78,10 @@ export default function RewardsPage() {
   const visible = rewards.filter((reward) => active === "All" || reward.category === active);
   const next = nextRewardFor(state.points, rewards);
   // One souvenir per trip: the trip's booking code (or "no trip") already has a redemption.
-  const usedThisTrip = state.redemptions.some((item) => (item.bookingCode ?? null) === (state.bookingCode ?? null));
+  // A souvenir bought fully with money does not count; a waiting order paid partly with points does.
+  const usedThisTrip =
+    state.redemptions.some((item) => !item.purchase && (item.bookingCode ?? null) === (state.bookingCode ?? null)) ||
+    orders.some((item) => item.status === "new" && item.kind === "topup" && item.bookingCode === (state.bookingCode ?? null));
   const affordableCount = usedThisTrip ? 0 : rewards.filter((reward) => reward.points <= state.points && stock[reward.id] !== 0).length;
 
   return (
@@ -147,6 +154,7 @@ export default function RewardsPage() {
           const soldOut = stock[reward.id] === 0;
           const affordable = missing <= 0 && !soldOut && !usedThisTrip;
           const price = priceFor(reward, language);
+          const topUp = !affordable && !soldOut && !usedThisTrip && canTopUp(reward, state.points) ? quoteOrder(reward, "topup", state.points, language) : null;
           return (
             <article key={reward.id} className="flex flex-col rounded-3xl bg-[#8FB05E] p-2 shadow-sm transition-transform hover:-translate-y-0.5">
               {/* The photo fills the 3:4 frame; admins choose which part stays in view. */}
@@ -188,23 +196,37 @@ export default function RewardsPage() {
                     Need<span translate="no" className="notranslate mx-[0.25em]">{missing}</span>more points
                   </p>
                 )}
+                {topUp?.ok && (
+                  <p className="mt-0.5 text-[11px] text-[#14281C]">
+                    or pay the rest:<span translate="no" className="notranslate ml-[0.25em] whitespace-nowrap font-semibold">{topUp.totalText}</span>
+                  </p>
+                )}
               </div>
               <div className="mt-2.5 grid grid-cols-1 gap-1.5">
-                <button
-                  onClick={() => setRedeeming(reward)}
-                  disabled={!affordable}
-                  className="min-h-11 rounded-2xl bg-[#5A4300] px-3 font-fredoka text-sm font-semibold text-white [overflow-wrap:break-word] disabled:opacity-45"
-                >
-                  redeem
-                </button>
-                <a
-                  href={whatsappLink(`Hello DhilTrip, I would like to purchase: ${reward.label} (${price}).`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                {topUp?.ok ? (
+                  <Link
+                    key="topup"
+                    href={`/buy/${reward.id}?topup=1`}
+                    className="flex min-h-11 items-center justify-center rounded-2xl bg-[#5A4300] px-3 text-center font-fredoka text-sm font-semibold leading-tight text-white [overflow-wrap:break-word]"
+                  >
+                    points + pay
+                  </Link>
+                ) : (
+                  <button
+                    key="redeem"
+                    onClick={() => setRedeeming(reward)}
+                    disabled={!affordable}
+                    className="min-h-11 rounded-2xl bg-[#5A4300] px-3 font-fredoka text-sm font-semibold text-white [overflow-wrap:break-word] disabled:opacity-45"
+                  >
+                    redeem
+                  </button>
+                )}
+                <Link
+                  href={`/buy/${reward.id}`}
                   className="flex min-h-11 items-center justify-center rounded-2xl bg-[#14281C] px-3 text-center font-fredoka text-sm font-semibold text-white [overflow-wrap:break-word]"
                 >
                   purchase
-                </a>
+                </Link>
               </div>
             </article>
           );

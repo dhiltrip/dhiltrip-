@@ -1,16 +1,12 @@
 "use client";
 
-import { use, useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { use, useMemo, useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Building2,
   CalendarDays,
-  Check,
   CheckCircle2,
-  Copy,
-  ImagePlus,
   Loader2,
   MessageCircle,
   Minus,
@@ -18,55 +14,16 @@ import {
   ShieldCheck,
   Users,
 } from "lucide-react";
-import { BANK, BOOKING_WHATSAPP, BOOKING_WHATSAPP_LABEL, MAX_TRAVELERS, countryNames } from "@/data/booking";
+import { BOOKING_WHATSAPP, BOOKING_WHATSAPP_LABEL, MAX_TRAVELERS, countryNames } from "@/data/booking";
 import { formatPrice } from "@/data/currency";
 import { focusStyle } from "@/data/focus";
 import { callApi, firebaseEnabled } from "@/lib/firebase/client";
 import { usePackage } from "@/lib/packages";
 import { leaveGuestMode, useChallenge } from "@/lib/participant";
 import { priceFor, useSiteLanguage } from "@/lib/currency";
-import { shrinkPhoto } from "@/lib/shrink-photo";
-
-const field =
-  "mt-1.5 w-full rounded-2xl border border-[#ADBC9F] bg-white px-4 py-3 text-base outline-none focus:ring-2 focus:ring-[#8DB255]";
+import { BankCard, ProofPicker, Section, field } from "@/components/PaymentParts";
 
 const todayInJogja = () => new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
-
-function Section({ n, title, children }: { n: number; title: string; children: ReactNode }) {
-  return (
-    <section className="space-y-3 rounded-3xl bg-white p-5 shadow">
-      <h2 className="title-card flex items-center gap-2 text-lg">
-        <span translate="no" className="notranslate flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0D2A1F] font-fredoka text-sm text-white">
-          {n}
-        </span>
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(value);
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 1500);
-        } catch {
-          setCopied(false);
-        }
-      }}
-      className="flex min-h-9 shrink-0 items-center gap-1.5 rounded-full bg-white/15 px-3 text-xs font-semibold hover:bg-white/25"
-    >
-      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-      <span key={copied ? "copied" : "copy"}>{copied ? "Copied" : "Copy"}</span>
-    </button>
-  );
-}
 
 type Done = { ref: string; whatsapp: string };
 
@@ -89,7 +46,6 @@ export default function BookPage({ params }: { params: Promise<{ packageId: stri
   const [meetingPoint, setMeetingPoint] = useState("");
   const [otherPoint, setOtherPoint] = useState("");
   const [proof, setProof] = useState<string | null>(null);
-  const [photoBusy, setPhotoBusy] = useState(false);
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,20 +66,6 @@ export default function BookPage({ params }: { params: Promise<{ packageId: stri
   const idr = pkg.prices?.IDR;
   const totalLabel = typeof idr === "number" ? formatPrice(idr * people, "IDR") : `${people} × ${priceText}`;
   const point = meetingPoint === "__other" ? otherPoint.trim() : meetingPoint;
-
-  const pickProof = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    setPhotoBusy(true);
-    setError(null);
-    try {
-      setProof(await shrinkPhoto(file, 1600));
-    } catch {
-      setError("This photo could not be used. Please upload a screenshot or photo of the transfer (JPG or PNG).");
-    }
-    setPhotoBusy(false);
-  };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -295,49 +237,8 @@ export default function BookPage({ params }: { params: Promise<{ packageId: stri
       </Section>
 
       <Section n={3} title="Payment">
-        <div className="rounded-2xl bg-[#0D2A1F] p-4 text-white">
-          <p className="flex items-center gap-2 text-sm font-semibold text-[#B6DC7A]">
-            <Building2 className="h-4 w-4" /> Bank transfer
-          </p>
-          <p translate="no" className="notranslate mt-2 font-fredoka text-lg font-semibold">{BANK.bank}</p>
-          <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-            <p translate="no" className="notranslate whitespace-nowrap font-mono text-[clamp(1.25rem,6vw,1.6rem)] font-bold tracking-wide">
-              {BANK.accountNumber}
-            </p>
-            <CopyButton value={BANK.accountNumber} />
-          </div>
-          <p translate="no" className="notranslate mt-1 text-sm text-white/85">{BANK.accountName}</p>
-          <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/15 pt-3">
-            <span className="text-sm text-white/85">Total to transfer</span>
-            <span translate="no" className="notranslate text-right font-fredoka text-xl font-semibold leading-tight">{totalLabel}</span>
-          </div>
-          {typeof idr !== "number" && (
-            <p className="mt-2 text-pretty text-xs text-white/75">Not sure of the amount in Rupiah? Ask our admin on WhatsApp before you transfer.</p>
-          )}
-        </div>
-        <div>
-          <p className="text-sm font-semibold">Proof of payment</p>
-          <label className="mt-1.5 flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-dashed border-[#ADBC9F] bg-[#F3F4DC] p-3">
-            <span className="relative flex h-24 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-[#436850]">
-              {photoBusy ? (
-                <Loader2 className="h-6 w-6 animate-spin" />
-              ) : proof ? (
-                // A data URL from the file picker can't go through the image optimizer.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={proof} alt="Proof of payment preview" className="h-full w-full object-cover" />
-              ) : (
-                <ImagePlus className="h-7 w-7" />
-              )}
-            </span>
-            <span className="min-w-0 text-sm">
-              <span key={proof ? "change" : "upload"} className="block font-semibold text-[#03603F]">
-                {proof ? "Photo added. Tap to change." : "Upload a screenshot or photo of the transfer"}
-              </span>
-              <span className="block text-xs text-[#436850]">Only our admin can see it.</span>
-            </span>
-            <input type="file" accept="image/*" onChange={(event) => void pickProof(event)} className="sr-only" />
-          </label>
-        </div>
+        <BankCard total={totalLabel} note={typeof idr !== "number" ? "Not sure of the amount in Rupiah? Ask our admin on WhatsApp before you transfer." : null} />
+        <ProofPicker proof={proof} onChange={setProof} onError={setError} />
       </Section>
 
       <label className="flex items-start gap-3 rounded-2xl bg-white p-4 text-sm shadow-sm">
@@ -355,7 +256,7 @@ export default function BookPage({ params }: { params: Promise<{ packageId: stri
             Sign in to book
           </button>
         ) : (
-          <button disabled={busy || photoBusy || !firebaseEnabled} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#8DB255] font-fredoka text-lg font-semibold text-[#0D2A1F] disabled:opacity-60">
+          <button disabled={busy || !firebaseEnabled} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#8DB255] font-fredoka text-lg font-semibold text-[#0D2A1F] disabled:opacity-60">
             {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
             Send booking
           </button>

@@ -17,6 +17,8 @@ export async function GET(request: Request) {
           rewardId: String(data.rewardId ?? ""),
           rewardLabel: String(data.rewardLabel ?? ""),
           bookingCode: (data.bookingCode as string | null) ?? null,
+          paid: typeof data.paid === "string" ? data.paid : null,
+          pickup: data.pickup === "office" ? "office" : "trip",
           createdAt: (data.createdAt as Timestamp | undefined)?.toMillis() ?? 0,
         };
       })

@@ -36,7 +36,7 @@ import { TeamManager } from "@/components/admin/TeamManager";
 import { MemoriesManager } from "@/components/admin/MemoriesManager";
 import { ReviewsManager } from "@/components/admin/ReviewsManager";
 import { ArticlesManager } from "@/components/admin/ArticlesManager";
-import { RequestsManager } from "@/components/admin/RequestsManager";
+import { BookingsTab } from "@/components/admin/BookingsTab";
 import { RewardsManager } from "@/components/admin/RewardsManager";
 import { TravelersManager } from "@/components/admin/TravelersManager";
 
@@ -422,7 +422,7 @@ export default function AdminPage() {
       </div>
 
       {tab === "requests" ? (
-        <RequestsManager />
+        <BookingsTab />
       ) : tab === "travelers" ? (
         <TravelersManager />
       ) : tab === "articles" ? (
