@@ -14,7 +14,8 @@ function serviceAccount(): ServiceAccount {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (raw) return JSON.parse(raw) as ServiceAccount;
   const file = process.env.FIREBASE_SERVICE_ACCOUNT_FILE;
-  if (file) return JSON.parse(fs.readFileSync(path.resolve(process.cwd(), file), "utf8")) as ServiceAccount;
+  // Local development only. The ignore hint keeps the build from bundling the whole project for this file read.
+  if (file) return JSON.parse(fs.readFileSync(path.join(/* turbopackIgnore: true */ process.cwd(), file), "utf8")) as ServiceAccount;
   throw new Error("Firebase service account is not configured.");
 }
 
