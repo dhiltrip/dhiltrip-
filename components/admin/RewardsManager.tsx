@@ -23,6 +23,8 @@ import { callApi } from "@/lib/firebase/client";
 import { useAllRewards } from "@/lib/rewards";
 import { shrinkPhoto } from "@/lib/shrink-photo";
 import { FocusPicker } from "@/components/admin/FocusPicker";
+import { CountryPrices, draftToPrices, newPrice, pricesToDraft, type PriceDraft } from "@/components/admin/CountryPrices";
+import { formatPrice } from "@/lib/currency";
 
 type Draft = {
   id?: string;
@@ -30,18 +32,29 @@ type Draft = {
   category: string;
   points: string;
   priceLabel: string;
+  prices: PriceDraft[];
   image: string | null;
   imageData: string | null;
   imageFocus: Focus | null;
 };
 
-const EMPTY: Draft = { label: "", category: "", points: "50", priceLabel: "", image: null, imageData: null, imageFocus: null };
+const emptyDraft = (): Draft => ({
+  label: "",
+  category: "",
+  points: "50",
+  priceLabel: "",
+  prices: [newPrice("IDR")],
+  image: null,
+  imageData: null,
+  imageFocus: null,
+});
 const draftOf = (reward: Reward): Draft => ({
   id: reward.id,
   label: reward.label,
   category: reward.category,
   points: String(reward.points),
   priceLabel: reward.priceLabel,
+  prices: pricesToDraft(reward.prices),
   image: reward.image,
   imageData: null,
   imageFocus: reward.imageFocus ?? null,
@@ -92,6 +105,7 @@ function Editor({
       category: draft.category,
       points: Number(draft.points),
       priceLabel: draft.priceLabel,
+      prices: draftToPrices(draft.prices),
       imageData: draft.imageData,
       imageFocus: draft.imageFocus,
     });
@@ -184,8 +198,7 @@ function Editor({
         <p className="mt-1.5 text-xs text-[#436850]">Pick one, or type a new category. Travelers filter by it.</p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block text-sm font-semibold">
+      <label className="block text-sm font-semibold">
           Points to redeem
           <input
             required
@@ -198,10 +211,17 @@ function Editor({
             className={field}
           />
         </label>
+
+      <div className="space-y-3 rounded-2xl bg-white p-3 ring-1 ring-[#ADBC9F]/60">
+        <div>
+          <p className="text-sm font-semibold">Price to buy</p>
+          <p className="mt-0.5 text-pretty text-xs text-[#436850]">Visitors see the price for the language they choose. Other languages see the default price.</p>
+        </div>
         <label className="block text-sm font-semibold">
-          Price to buy
-          <input maxLength={60} value={draft.priceLabel} onChange={(event) => set("priceLabel", event.target.value)} placeholder="e.g. 5 USD / Rp75.000" className={field} />
+          Default price
+          <input required maxLength={60} value={draft.priceLabel} onChange={(event) => set("priceLabel", event.target.value)} placeholder="e.g. 5 USD" className={field} />
         </label>
+        <CountryPrices prices={draft.prices} onChange={(prices) => set("prices", prices)} />
       </div>
 
       {error && <p role="alert" className="text-sm font-semibold text-[#A33A12]">{error}</p>}
@@ -218,6 +238,16 @@ function Editor({
         </button>
       </div>
     </form>
+  );
+}
+
+/** Default price plus every country price, so admins see all of them at a glance. */
+function PriceList({ reward }: { reward: Reward }) {
+  const entries = Object.entries(reward.prices ?? {}).filter((entry): entry is [string, number] => typeof entry[1] === "number");
+  return (
+    <span translate="no" className="notranslate">
+      {[reward.priceLabel, ...entries.map(([code, amount]) => formatPrice(amount, code))].filter(Boolean).join(" · ")}
+    </span>
   );
 }
 
@@ -358,7 +388,7 @@ export function RewardsManager() {
         </div>
         {!editing && (
           <button
-            onClick={() => openEditor(EMPTY)}
+            onClick={() => openEditor(emptyDraft())}
             className="flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-2xl bg-[#0D2A1F] px-4 font-fredoka font-semibold text-white"
           >
             <Plus className="h-5 w-5" /> Add souvenir
@@ -414,7 +444,7 @@ export function RewardsManager() {
                       <Image src="/challenge/coin.webp" alt="" width={14} height={14} />
                       <span translate="no" className="notranslate">{reward.points}</span>
                     </span>
-                    {reward.priceLabel && <span translate="no" className="notranslate">{reward.priceLabel}</span>}
+                    <PriceList reward={reward} />
                   </p>
                   <div className="mt-2">
                     {stock ? (

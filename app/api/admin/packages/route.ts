@@ -1,10 +1,10 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { prefixOf, type ChallengePackage, type Stop } from "@/data/challenge";
 import { adminDb } from "@/lib/server/firebase-admin";
-import { CURRENCY_CODES } from "@/data/currency";
 import { readFocus } from "@/data/focus";
 import { saveImage } from "@/lib/server/images";
 import { randomCode } from "@/lib/server/model";
+import { readPrices } from "@/lib/server/prices";
 import { ensureSeeded, listPackages } from "@/lib/server/packages";
 import { HttpError, handle, ok, readJson, requireSession } from "@/lib/server/session";
 
@@ -83,19 +83,6 @@ function readStops(input: StopInput[] | undefined, previous: Stop[]): Stop[] {
   });
 }
 
-/** Keeps only known currencies with a sensible positive amount. */
-function readPrices(input: Record<string, unknown> | undefined) {
-  const prices: Record<string, number> = {};
-  for (const [code, value] of Object.entries(input ?? {})) {
-    if (!CURRENCY_CODES.includes(code) || value === null || value === "") continue;
-    const amount = Number(value);
-    if (!Number.isFinite(amount) || amount <= 0 || amount > 1e12) {
-      throw new HttpError(400, `The ${code} price must be a number above 0.`);
-    }
-    prices[code] = Math.round(amount * 100) / 100;
-  }
-  return prices;
-}
 
 
 async function save(input: PackageInput) {

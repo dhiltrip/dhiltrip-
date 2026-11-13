@@ -4,6 +4,7 @@ import { readFocus } from "@/data/focus";
 import { adminDb } from "@/lib/server/firebase-admin";
 import { saveImage } from "@/lib/server/images";
 import { randomCode } from "@/lib/server/model";
+import { readPrices } from "@/lib/server/prices";
 import { ensureRewardsSeeded, listRewards } from "@/lib/server/rewards";
 import { HttpError, handle, ok, readJson, requireSession } from "@/lib/server/session";
 
@@ -14,6 +15,7 @@ type Body = {
   category?: string;
   points?: number;
   priceLabel?: string;
+  prices?: unknown;
   imageData?: string | null;
   imageFocus?: unknown;
   hidden?: boolean;
@@ -46,6 +48,7 @@ export async function POST(request: Request) {
       const points = Math.floor(Number(body.points));
       if (!Number.isFinite(points) || points < 1 || points > 100000) throw new HttpError(400, "Points must be 1 or more.");
       const priceLabel = String(body.priceLabel ?? "").trim().slice(0, 60);
+      if (!priceLabel) throw new HttpError(400, "Please fill in the default price, e.g. 5 USD.");
 
       const all = await listRewards();
       const existing = body.id ? all.find((reward) => reward.id === body.id) : undefined;
@@ -56,6 +59,7 @@ export async function POST(request: Request) {
         category,
         points,
         priceLabel,
+        prices: readPrices(body.prices),
         imageFocus: readFocus(body.imageFocus),
         updatedAt: FieldValue.serverTimestamp(),
       };

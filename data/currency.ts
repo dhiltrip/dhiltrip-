@@ -1,4 +1,5 @@
-import type { ChallengePackage } from "@/data/challenge";
+/** Anything sold with a default price text and optional prices per currency (packages, souvenirs). */
+export type Priced = { priceLabel: string; prices?: Partial<Record<string, number>> };
 
 /** Currencies an admin can set a package price in, and how each is written. */
 export const CURRENCIES = [
@@ -50,9 +51,9 @@ export function formatPrice(amount: number, code: string) {
   }
 }
 
-/** A package's price for the visitor's language, falling back to the default price text. */
-export function priceFor(pkg: ChallengePackage, language: string) {
+/** The price for the visitor's language, falling back to the default price text. */
+export function priceFor(item: Priced, language: string) {
   const code = currencyForLanguage(language);
-  const amount = code ? pkg.prices?.[code] : undefined;
-  return code && typeof amount === "number" ? formatPrice(amount, code) : pkg.priceLabel;
+  const amount = code ? item.prices?.[code] : undefined;
+  return code && typeof amount === "number" ? formatPrice(amount, code) : item.priceLabel;
 }

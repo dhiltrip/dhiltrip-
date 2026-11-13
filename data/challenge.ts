@@ -251,7 +251,10 @@ export type Reward = {
   /** Which part of the photo to keep in view in the reward card. */
   imageFocus?: Focus | null;
   points: number;
+  /** Default price text, shown when there is no price for the visitor's country. */
   priceLabel: string;
+  /** Price per currency (IDR, KRW, …); visitors see the one for their language. */
+  prices?: Partial<Record<string, number>>;
   /** Hidden rewards stay in the database but are not offered. */
   hidden?: boolean;
   /** Position in the store, lowest first. */
@@ -264,7 +267,8 @@ const wayang = (id: string, label: string, image: string): Reward => ({
   label,
   image: `/challenge/${image}.webp`,
   points: 200,
-  priceLabel: "25 USD / ₩35.000",
+  priceLabel: "25 USD",
+  prices: { KRW: 35000 },
 });
 
 const small = (
@@ -278,7 +282,8 @@ const small = (
   label,
   image: `/challenge/${image}.webp`,
   points: 50,
-  priceLabel: "5 USD / ₩5000",
+  priceLabel: "5 USD",
+  prices: { KRW: 5000 },
 });
 
 /** The original twelve souvenirs. They seed the database and are used when Firebase is off. */

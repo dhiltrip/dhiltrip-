@@ -1,8 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import type { ChallengePackage } from "@/data/challenge";
-import { priceFor } from "@/data/currency";
+import { priceFor, type Priced } from "@/data/currency";
 
 export * from "@/data/currency";
 
@@ -20,6 +19,6 @@ export function useSiteLanguage() {
   );
 }
 
-export function usePrice(pkg: ChallengePackage) {
-  return priceFor(pkg, useSiteLanguage());
+export function usePrice(item: Priced) {
+  return priceFor(item, useSiteLanguage());
 }

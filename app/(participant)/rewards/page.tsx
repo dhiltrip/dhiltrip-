@@ -7,6 +7,7 @@ import { nextRewardFor, whatsappLink, type Reward } from "@/data/challenge";
 import { focusStyle } from "@/data/focus";
 import { redeemReward, useChallenge, useRewardStock, type RedeemResult } from "@/lib/participant";
 import { useRewards } from "@/lib/rewards";
+import { priceFor, useSiteLanguage } from "@/lib/currency";
 
 function RedeemSheet({ reward, points, onClose }: { reward: Reward; points: number; onClose: () => void }) {
   const [result, setResult] = useState<RedeemResult | null>(null);
@@ -62,6 +63,7 @@ export default function RewardsPage() {
   const state = useChallenge();
   const stock = useRewardStock();
   const rewards = useRewards();
+  const language = useSiteLanguage();
   const [filter, setFilter] = useState("All");
   const [redeeming, setRedeeming] = useState<Reward | null>(null);
   if (!state) return null;
@@ -144,6 +146,7 @@ export default function RewardsPage() {
           const missing = reward.points - state.points;
           const soldOut = stock[reward.id] === 0;
           const affordable = missing <= 0 && !soldOut && !usedThisTrip;
+          const price = priceFor(reward, language);
           return (
             <article key={reward.id} className="flex flex-col rounded-3xl bg-[#8FB05E] p-2 shadow-sm transition-transform hover:-translate-y-0.5">
               {/* The photo fills the 3:4 frame; admins choose which part stays in view. */}
@@ -178,7 +181,7 @@ export default function RewardsPage() {
                   </span>
                 </p>
                 <p className="mt-0.5 text-[11px] text-[#14281C]">
-                  or<span translate="no" className="notranslate ml-[0.25em] whitespace-nowrap">{reward.priceLabel}</span>
+                  or<span translate="no" className="notranslate ml-[0.25em] whitespace-nowrap">{price}</span>
                 </p>
                 {!soldOut && missing > 0 && (
                   <p className="mt-0.5 text-[11px] font-semibold text-[#5A4300]">
@@ -195,7 +198,7 @@ export default function RewardsPage() {
                   redeem
                 </button>
                 <a
-                  href={whatsappLink(`Hello DhilTrip, I would like to purchase: ${reward.label} (${reward.priceLabel}).`)}
+                  href={whatsappLink(`Hello DhilTrip, I would like to purchase: ${reward.label} (${price}).`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex min-h-11 items-center justify-center rounded-2xl bg-[#14281C] px-3 text-center font-fredoka text-sm font-semibold text-white [overflow-wrap:break-word]"

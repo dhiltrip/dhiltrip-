@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { prefixOf, type ChallengePackage } from "@/data/challenge";
 import { callApi } from "@/lib/firebase/client";
-import { CURRENCIES, currencyInfo, formatPrice } from "@/data/currency";
+import { CountryPrices, draftToPrices, newPrice, pricesToDraft, type PriceDraft } from "@/components/admin/CountryPrices";
 import { useAllPackages } from "@/lib/packages";
 import { shrinkPhoto } from "@/lib/shrink-photo";
 import { FocusPicker } from "@/components/admin/FocusPicker";
@@ -33,7 +33,6 @@ const LocationPicker = dynamic(() => import("@/components/LocationPicker").then(
 const field =
   "mt-1.5 w-full rounded-2xl border border-[#ADBC9F] bg-white px-4 py-3 text-base outline-none focus:ring-2 focus:ring-[#8DB255]";
 
-type PriceDraft = { key: string; code: string; amount: string };
 type StopDraft = { key: string; id?: string; name: string; lat: number | null; lng: number | null; funfact: string };
 type Draft = {
   id?: string;
@@ -64,7 +63,7 @@ const emptyDraft = (): Draft => ({
   tagline: "",
   description: "",
   priceLabel: "50 USD",
-  prices: [{ key: newKey(), code: "IDR", amount: "" }],
+  prices: [newPrice("IDR")],
   duration: "One Day Trip",
   tags: "",
   destinationLabel: "Route / Destination",
@@ -84,7 +83,7 @@ const draftFrom = (pkg: ChallengePackage): Draft => ({
   tagline: pkg.tagline,
   description: pkg.description,
   priceLabel: pkg.priceLabel,
-  prices: Object.entries(pkg.prices ?? {}).map(([code, amount]) => ({ key: newKey(), code, amount: String(amount ?? "") })),
+  prices: pricesToDraft(pkg.prices),
   duration: pkg.duration,
   tags: pkg.tags.join(", "),
   destinationLabel: pkg.destinationLabel,
@@ -114,11 +113,6 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
 
 /** Default price text plus a price per country; visitors see the one matching their language. */
 function PriceSection({ draft, set }: { draft: Draft; set: <K extends keyof Draft>(key: K, value: Draft[K]) => void }) {
-  const used = new Set(draft.prices.map((price) => price.code));
-  const free = CURRENCIES.filter((currency) => !used.has(currency.code));
-  const update = (key: string, patch: Partial<PriceDraft>) =>
-    set("prices", draft.prices.map((price) => (price.key === key ? { ...price, ...patch } : price)));
-
   return (
     <Section title="Price" hint="Visitors see the price for the language they choose. Other languages see the default price.">
       <label className="block text-sm font-semibold">
@@ -126,73 +120,7 @@ function PriceSection({ draft, set }: { draft: Draft; set: <K extends keyof Draf
         <input required maxLength={60} value={draft.priceLabel} onChange={(event) => set("priceLabel", event.target.value)} placeholder="50 USD" className={field} />
       </label>
 
-      <div className="space-y-2">
-        <p className="text-sm font-semibold">Price per country</p>
-        {draft.prices.length === 0 && <p className="text-xs text-[#436850]">No country prices yet.</p>}
-        {draft.prices.map((price) => {
-          const info = currencyInfo(price.code);
-          const amount = Number(price.amount);
-          return (
-            <div key={price.key} className="rounded-2xl bg-[#F3F4DC] p-3">
-              <div className="flex items-center gap-2">
-                <select
-                  value={price.code}
-                  onChange={(event) => update(price.key, { code: event.target.value })}
-                  aria-label="Country and currency"
-                  className="min-w-0 flex-1 rounded-xl border border-[#ADBC9F] bg-white px-2 py-2.5 text-sm"
-                >
-                  {[...(info ? [info] : []), ...free].map((currency) => (
-                    <option key={currency.code} value={currency.code}>
-                      {currency.country} ({currency.code})
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  min={0}
-                  step="any"
-                  inputMode="decimal"
-                  value={price.amount}
-                  onChange={(event) => update(price.key, { amount: event.target.value })}
-                  placeholder="Amount"
-                  aria-label={`Price in ${price.code}`}
-                  className="w-32 shrink-0 rounded-xl border border-[#ADBC9F] bg-white px-3 py-2.5 text-right text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={() => set("prices", draft.prices.filter((item) => item.key !== price.key))}
-                  aria-label="Remove this price"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#A33A12] hover:bg-[#A33A12]/10"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <p className="mt-1.5 text-xs text-[#436850]">
-                {amount > 0 ? (
-                  <>
-                    Shows as{" "}
-                    <span translate="no" className="notranslate font-semibold text-[#12372A]">
-                      {formatPrice(amount, price.code)}
-                    </span>
-                  </>
-                ) : (
-                  "Enter the amount, e.g. 650000"
-                )}
-              </p>
-            </div>
-          );
-        })}
-        {free.length > 0 && (
-          <button
-            type="button"
-            onClick={() => set("prices", [...draft.prices, { key: newKey(), code: free[0].code, amount: "" }])}
-            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#ADBC9F] text-sm font-semibold text-[#03603F]"
-          >
-            <Plus className="h-4 w-4" />
-            Add a country price
-          </button>
-        )}
-      </div>
+      <CountryPrices prices={draft.prices} onChange={(prices) => set("prices", prices)} />
     </Section>
   );
 }
@@ -255,7 +183,7 @@ function Editor({ initial, onDone }: { initial: Draft; onDone: () => void }) {
         tagline: draft.tagline,
         description: draft.description,
         priceLabel: draft.priceLabel,
-        prices: Object.fromEntries(draft.prices.filter((price) => price.amount.trim()).map((price) => [price.code, Number(price.amount)])),
+        prices: draftToPrices(draft.prices),
         duration: draft.duration,
         tags: draft.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
         destinationLabel: draft.destinationLabel,
