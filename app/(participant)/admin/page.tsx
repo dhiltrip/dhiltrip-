@@ -10,6 +10,7 @@ import {
   Gift,
   Images,
   Inbox,
+  UserRound,
   Loader2,
   Map as MapIcon,
   MessageCircle,
@@ -37,6 +38,7 @@ import { MemoriesManager } from "@/components/admin/MemoriesManager";
 import { ReviewsManager } from "@/components/admin/ReviewsManager";
 import { ArticlesManager } from "@/components/admin/ArticlesManager";
 import { RequestsManager } from "@/components/admin/RequestsManager";
+import { TravelersManager } from "@/components/admin/TravelersManager";
 
 type Booking = {
   code: string;
@@ -405,7 +407,7 @@ function StockEditor() {
   );
 }
 
-type Tab = "requests" | "codes" | "packages" | "souvenirs" | "memories" | "reviews" | "articles" | "team";
+type Tab = "requests" | "travelers" | "codes" | "packages" | "souvenirs" | "memories" | "reviews" | "articles" | "team";
 
 /** Admins create a group booking code after payment and send it to the group on WhatsApp. */
 export default function AdminPage() {
@@ -497,10 +499,11 @@ export default function AdminPage() {
         ]}
       />
 
-      <div role="tablist" aria-label="Admin sections" className="grid grid-cols-4 gap-1 rounded-3xl bg-[#DDE5BE] p-1 sm:grid-cols-8">
+      <div role="tablist" aria-label="Admin sections" className="grid grid-cols-3 gap-1 rounded-3xl bg-[#DDE5BE] p-1 sm:grid-cols-9">
         {(
           [
             ["requests", "Bookings", <Inbox key="i" className="h-4 w-4 shrink-0" />],
+            ["travelers", "Travelers", <UserRound key="i" className="h-4 w-4 shrink-0" />],
             ["codes", "Codes", <Ticket key="i" className="h-4 w-4 shrink-0" />],
             ["packages", "Packages", <MapIcon key="i" className="h-4 w-4 shrink-0" />],
             ["souvenirs", "Stock", <Gift key="i" className="h-4 w-4 shrink-0" />],
@@ -527,6 +530,8 @@ export default function AdminPage() {
 
       {tab === "requests" ? (
         <RequestsManager />
+      ) : tab === "travelers" ? (
+        <TravelersManager />
       ) : tab === "articles" ? (
         <ArticlesManager />
       ) : tab === "memories" ? (
