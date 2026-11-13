@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
 import {
@@ -26,7 +26,6 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
-import { rewards } from "@/data/challenge";
 import { focusStyle } from "@/data/focus";
 import { findIn, useAllPackages, usePackages } from "@/lib/packages";
 import { callApi } from "@/lib/firebase/client";
@@ -38,6 +37,7 @@ import { MemoriesManager } from "@/components/admin/MemoriesManager";
 import { ReviewsManager } from "@/components/admin/ReviewsManager";
 import { ArticlesManager } from "@/components/admin/ArticlesManager";
 import { RequestsManager } from "@/components/admin/RequestsManager";
+import { RewardsManager } from "@/components/admin/RewardsManager";
 import { TravelersManager } from "@/components/admin/TravelersManager";
 
 type Booking = {
@@ -300,113 +300,6 @@ function BookingCard({
   );
 }
 
-type SaveStatus = "saving" | "saved" | "error";
-
-function StockEditor() {
-  const [stock, setStock] = useState<Record<string, number | null> | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [status, setStatus] = useState<Partial<Record<string, SaveStatus>>>({});
-  const timers = useRef<Record<string, number>>({});
-
-  useEffect(() => {
-    let cancelled = false;
-    callApi<{ stock: Record<string, number | null> }>("/api/admin/stock").then((result) => {
-      if (cancelled) return;
-      if (result.ok) setStock(result.stock);
-      else setMessage(result.message);
-    });
-    const pending = timers.current;
-    return () => {
-      cancelled = true;
-      Object.values(pending).forEach((timer) => window.clearTimeout(timer));
-    };
-  }, []);
-
-  const persist = async (rewardId: string, next: number | null) => {
-    setStatus((current) => ({ ...current, [rewardId]: "saving" }));
-    const result = await callApi("/api/admin/stock", { rewardId, stock: next });
-    if (result.ok) {
-      setMessage(null);
-      setStatus((current) => ({ ...current, [rewardId]: "saved" }));
-      window.setTimeout(
-        () => setStatus((current) => (current[rewardId] === "saved" ? { ...current, [rewardId]: undefined } : current)),
-        2500,
-      );
-    } else {
-      setMessage(result.message);
-      setStatus((current) => ({ ...current, [rewardId]: "error" }));
-    }
-  };
-
-  /** Updates the number right away and saves shortly after the last tap. */
-  const change = (rewardId: string, next: number | null) => {
-    setStock((current) => ({ ...(current ?? {}), [rewardId]: next }));
-    window.clearTimeout(timers.current[rewardId]);
-    timers.current[rewardId] = window.setTimeout(() => void persist(rewardId, next), 600);
-  };
-
-  return (
-    <section className="space-y-3">
-      <div className="flex items-start gap-3 rounded-3xl bg-white/70 p-4 ring-1 ring-[#ADBC9F]/60">
-        <Gift className="mt-0.5 h-5 w-5 shrink-0 text-[#03603F]" />
-        <p className="text-pretty text-sm text-[#436850]">
-          Set how many of each souvenir you still have. Changes save by themselves. <strong className="text-[#12372A]">∞</strong> means
-          unlimited; at <strong className="text-[#12372A]">0</strong> travelers see &ldquo;Out of stock&rdquo;.
-        </p>
-      </div>
-      {message && <p className="text-sm font-semibold text-[#A33A12]">{message}</p>}
-      {!stock ? (
-        <p className="flex items-center gap-2 text-sm text-[#436850]">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading…
-        </p>
-      ) : (
-        <ul className="grid gap-3 lg:grid-cols-2">
-          {rewards.map((reward) => {
-            const value = stock[reward.id] ?? null;
-            const state = status[reward.id];
-            const unlimited = value === null;
-            return (
-              <li key={reward.id} className="flex items-center gap-3 rounded-3xl bg-white p-3 shadow-sm ring-1 ring-[#ADBC9F]/60">
-                <div className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[#DDE5BE] ${value === 0 ? "grayscale" : ""}`}>
-                  <Image src={reward.image} alt="" fill sizes="64px" className="object-cover" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold leading-snug">{reward.label}</p>
-                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
-                    <span className="flex items-center gap-1 text-[#5A4300]">
-                      <Image src="/challenge/coin.webp" alt="" width={14} height={14} />
-                      <span translate="no" className="notranslate">{reward.points}</span>
-                    </span>
-                    {state === "saving" && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#436850]" />}
-                    {state === "saved" && (
-                      <span key="saved" className="flex items-center gap-0.5 text-[#03603F]">
-                        <Check className="h-3.5 w-3.5" /> Saved
-                      </span>
-                    )}
-                    {state === "error" && <span key="error" className="text-[#A33A12]">Not saved</span>}
-                  </div>
-                  {!unlimited && (
-                    <button onClick={() => change(reward.id, null)} className="mt-1 text-[11px] font-semibold text-[#436850] underline">
-                      Make unlimited
-                    </button>
-                  )}
-                </div>
-                <Stepper
-                  label={reward.label}
-                  value={unlimited ? -1 : value}
-                  min={unlimited ? -1 : 0}
-                  display={unlimited ? "∞" : undefined}
-                  onChange={(next) => change(reward.id, unlimited ? (next > -1 ? 1 : null) : Math.max(0, next))}
-                />
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </section>
-  );
-}
-
 type Tab = "requests" | "travelers" | "codes" | "packages" | "souvenirs" | "memories" | "reviews" | "articles" | "team";
 
 /** Admins create a group booking code after payment and send it to the group on WhatsApp. */
@@ -506,7 +399,7 @@ export default function AdminPage() {
             ["travelers", "Travelers", <UserRound key="i" className="h-4 w-4 shrink-0" />],
             ["codes", "Codes", <Ticket key="i" className="h-4 w-4 shrink-0" />],
             ["packages", "Packages", <MapIcon key="i" className="h-4 w-4 shrink-0" />],
-            ["souvenirs", "Stock", <Gift key="i" className="h-4 w-4 shrink-0" />],
+            ["souvenirs", "Rewards", <Gift key="i" className="h-4 w-4 shrink-0" />],
             ["memories", "Photos", <Images key="i" className="h-4 w-4 shrink-0" />],
             ["reviews", "Reviews", <Star key="i" className="h-4 w-4 shrink-0" />],
             ["articles", "Articles", <Newspaper key="i" className="h-4 w-4 shrink-0" />],
@@ -541,7 +434,7 @@ export default function AdminPage() {
       ) : tab === "team" ? (
         <TeamManager myEmail={state.user?.email ?? ""} />
       ) : tab === "souvenirs" ? (
-        <StockEditor />
+        <RewardsManager />
       ) : tab === "packages" ? (
         <PackageManager />
       ) : (

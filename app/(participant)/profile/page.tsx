@@ -4,7 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Check, ChevronDown, ChevronRight, Loader2, MailCheck, Recycle, Scale, FileText, KeyRound, LogOut, RefreshCcw, Repeat, ShieldCheck } from "lucide-react";
-import { findReward } from "@/data/challenge";
+import { focusStyle } from "@/data/focus";
+import { findRewardIn, useAllRewards } from "@/lib/rewards";
 import { usePackage } from "@/lib/packages";
 import { MyReviews } from "@/components/TripReview";
 import { MyBookings } from "@/components/MyBookings";
@@ -134,6 +135,7 @@ const rowClass = "flex min-h-12 w-full items-center gap-3 px-4 text-left text-sm
 export default function ProfilePage() {
   const state = useChallenge();
   const pkg = usePackage(state?.packageId);
+  const allRewards = useAllRewards();
   const [settingsOpen, setSettingsOpen] = useState(false);
   if (!state || !state.user) return null;
   if (state.isGuest) {
@@ -160,7 +162,7 @@ export default function ProfilePage() {
       </div>
     );
   }
-  const firstReward = state.redemptions[0] ? findReward(state.redemptions[0].rewardId) : null;
+  const firstReward = state.redemptions[0] ? findRewardIn(allRewards, state.redemptions[0].rewardId) : null;
   const visited = pkg ? pkg.stops.filter((stop) => state.visitedStopIds.includes(stop.id)).length : 0;
 
   return (
@@ -228,6 +230,7 @@ export default function ProfilePage() {
                 fill
                 sizes="44px"
                 className="object-cover"
+                style={focusStyle(firstReward?.imageFocus)}
               />
             }
           />

@@ -21,6 +21,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Souvenirs in the Rewards Store; admins change them through the server.
+    match /rewards/{rewardId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Anyone can see how many of each souvenir are left.
     match /rewardStock/{rewardId} {
       allow read: if true;

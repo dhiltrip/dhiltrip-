@@ -1,7 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { findReward } from "@/data/challenge";
 import { adminDb } from "@/lib/server/firebase-admin";
 import { IMPACT_DOC, type TripDoc } from "@/lib/server/model";
+import { getReward } from "@/lib/server/rewards";
 import { HttpError, handle, ok, readJson, requireSession } from "@/lib/server/session";
 
 /** Spends points on a souvenir and queues it for the tour leader to hand over. */
@@ -9,8 +9,8 @@ export async function POST(request: Request) {
   return handle(async () => {
     const session = await requireSession(request);
     const body = await readJson<{ rewardId: string }>(request);
-    const reward = findReward(String(body.rewardId ?? ""));
-    if (!reward) throw new HttpError(404, "This reward is not available.");
+    const reward = await getReward(String(body.rewardId ?? ""));
+    if (!reward || reward.hidden) throw new HttpError(404, "This reward is not available.");
 
     const db = adminDb();
     const userRef = db.collection("users").doc(session.uid);

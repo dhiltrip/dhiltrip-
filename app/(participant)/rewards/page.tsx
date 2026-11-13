@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Gift } from "lucide-react";
-import { nextRewardFor, rewards, whatsappLink, type Reward, type RewardCategory } from "@/data/challenge";
+import { nextRewardFor, whatsappLink, type Reward } from "@/data/challenge";
+import { focusStyle } from "@/data/focus";
 import { redeemReward, useChallenge, useRewardStock, type RedeemResult } from "@/lib/participant";
-
-const filters: ("All" | RewardCategory)[] = ["All", "Wayang", "Keychain", "Earring"];
+import { useRewards } from "@/lib/rewards";
 
 function RedeemSheet({ reward, points, onClose }: { reward: Reward; points: number; onClose: () => void }) {
   const [result, setResult] = useState<RedeemResult | null>(null);
@@ -22,7 +22,7 @@ function RedeemSheet({ reward, points, onClose }: { reward: Reward; points: numb
       <div className="w-full max-w-[480px] animate-rise-in rounded-t-3xl lg:max-w-md lg:rounded-3xl lg:pb-6 bg-[#F3F4DC] p-5 pb-[calc(2rem+env(safe-area-inset-bottom))] text-[#12372A]">
         <div className="flex items-center gap-3">
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[#DDE5BE]">
-            <Image src={reward.image} alt={reward.label} fill sizes="64px" className="object-cover" />
+            <Image src={reward.image} alt={reward.label} fill sizes="64px" className="object-cover" style={focusStyle(reward.imageFocus)} />
           </div>
           {result?.ok ? (
             <div className="min-w-0">
@@ -61,12 +61,16 @@ function RedeemSheet({ reward, points, onClose }: { reward: Reward; points: numb
 export default function RewardsPage() {
   const state = useChallenge();
   const stock = useRewardStock();
-  const [filter, setFilter] = useState<(typeof filters)[number]>("All");
+  const rewards = useRewards();
+  const [filter, setFilter] = useState("All");
   const [redeeming, setRedeeming] = useState<Reward | null>(null);
   if (!state) return null;
 
-  const visible = rewards.filter((reward) => filter === "All" || reward.category === filter);
-  const next = nextRewardFor(state.points);
+  // Filters follow the categories admins use, in the order they first appear.
+  const filters = ["All", ...new Set(rewards.map((reward) => reward.category))];
+  const active = filters.includes(filter) ? filter : "All";
+  const visible = rewards.filter((reward) => active === "All" || reward.category === active);
+  const next = nextRewardFor(state.points, rewards);
   // One souvenir per trip: the trip's booking code (or "no trip") already has a redemption.
   const usedThisTrip = state.redemptions.some((item) => (item.bookingCode ?? null) === (state.bookingCode ?? null));
   const affordableCount = usedThisTrip ? 0 : rewards.filter((reward) => reward.points <= state.points && stock[reward.id] !== 0).length;
@@ -125,9 +129,9 @@ export default function RewardsPage() {
           <button
             key={item}
             onClick={() => setFilter(item)}
-            aria-pressed={filter === item}
+            aria-pressed={active === item}
             className={`min-h-10 grow whitespace-nowrap rounded-full border border-[#5A4300] px-3.5 font-fredoka text-base ${
-              filter === item ? "bg-[#5A4300] text-white" : "text-[#12372A]"
+              active === item ? "bg-[#5A4300] text-white" : "text-[#12372A]"
             }`}
           >
             {item}
@@ -142,7 +146,7 @@ export default function RewardsPage() {
           const affordable = missing <= 0 && !soldOut && !usedThisTrip;
           return (
             <article key={reward.id} className="flex flex-col rounded-3xl bg-[#8FB05E] p-2 shadow-sm transition-transform hover:-translate-y-0.5">
-              {/* Product photos are 3:4; other shapes are shown whole on the dark green instead of cropped. */}
+              {/* The photo fills the 3:4 frame; admins choose which part stays in view. */}
               <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-[#0D2A1F]">
                 <Image
                   src={reward.image}
@@ -150,7 +154,8 @@ export default function RewardsPage() {
                   fill
                   sizes="220px"
                   loading={index < 4 ? "eager" : "lazy"}
-                  className={`object-contain ${soldOut ? "grayscale" : ""}`}
+                  className={`object-cover ${soldOut ? "grayscale" : ""}`}
+                  style={focusStyle(reward.imageFocus)}
                 />
                 {soldOut ? (
                   <span key="out" className="absolute left-2 top-2 rounded-full px-2.5 py-1 text-[11px] font-bold text-white shadow" style={{ backgroundColor: "#A33A12" }}>

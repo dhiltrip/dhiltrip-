@@ -240,15 +240,22 @@ export const packages: ChallengePackage[] = [
   },
 ];
 
-export type RewardCategory = "Wayang" | "Keychain" | "Earring";
+/** Built-in categories; admins can add others. */
+export type RewardCategory = string;
 
 export type Reward = {
   id: string;
   category: RewardCategory;
   label: string;
   image: string;
+  /** Which part of the photo to keep in view in the reward card. */
+  imageFocus?: Focus | null;
   points: number;
   priceLabel: string;
+  /** Hidden rewards stay in the database but are not offered. */
+  hidden?: boolean;
+  /** Position in the store, lowest first. */
+  order?: number;
 };
 
 const wayang = (id: string, label: string, image: string): Reward => ({
@@ -274,6 +281,7 @@ const small = (
   priceLabel: "5 USD / ₩5000",
 });
 
+/** The original twelve souvenirs. They seed the database and are used when Firebase is off. */
 export const rewards: Reward[] = [
   wayang("wayang-wolverine", "Recycled plastic wayang, Wolverine", "wayang-wolverine"),
   wayang("wayang-pair-yellow", "Recycled plastic wayang pair", "wayang-pair-yellow"),
@@ -295,10 +303,10 @@ export const findPackage = (id: string | null | undefined) =>
 export const findReward = (id: string) => rewards.find((r) => r.id === id) ?? null;
 
 /** The cheapest reward the visitor cannot afford yet, or null when everything is affordable. */
-export const nextRewardFor = (points: number) =>
-  [...rewards].filter((reward) => reward.points > points).sort((a, b) => a.points - b.points)[0] ?? null;
+export const nextRewardFor = (points: number, list: Reward[] = rewards) =>
+  [...list].filter((reward) => reward.points > points).sort((a, b) => a.points - b.points)[0] ?? null;
 
-export const cheapestReward = () => Math.min(...rewards.map((reward) => reward.points));
+export const cheapestReward = (list: Reward[] = rewards) => (list.length ? Math.min(...list.map((reward) => reward.points)) : 0);
 
 /** Booking codes start with a short package prefix, e.g. CUT-1110-ABC. */
 export const PACKAGE_PREFIX: Record<string, string> = {

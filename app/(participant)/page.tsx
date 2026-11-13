@@ -13,6 +13,7 @@ import { POINTS, cheapestReward, nextRewardFor, type ChallengePackage } from "@/
 import { usePackage, usePackages } from "@/lib/packages";
 import { usePrice } from "@/lib/currency";
 import { focusStyle } from "@/data/focus";
+import { useRewards } from "@/lib/rewards";
 import { joinTrip, useChallenge, type ChallengeState } from "@/lib/participant";
 
 /** The price in the currency of the chosen language, if the admin set one. */
@@ -29,8 +30,9 @@ function CheckBox({ checked }: { checked: boolean }) {
 }
 
 function RewardHint({ points }: { points: number }) {
-  const next = nextRewardFor(points);
-  const canRedeem = points >= cheapestReward();
+  const rewards = useRewards();
+  const next = nextRewardFor(points, rewards);
+  const canRedeem = rewards.length > 0 && points >= cheapestReward(rewards);
   return (
     <Link
       href="/rewards"

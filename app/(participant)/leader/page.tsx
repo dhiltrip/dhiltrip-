@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
 import { Check, Copy, CupSoda, Flag, Gift, Loader2, MessageCircle, PackageCheck, QrCode, RefreshCcw, Scale, Truck } from "lucide-react";
-import { POINTS, findReward } from "@/data/challenge";
+import { POINTS } from "@/data/challenge";
+import { focusStyle } from "@/data/focus";
+import { findRewardIn, useAllRewards } from "@/lib/rewards";
 import { callApi } from "@/lib/firebase/client";
 import { canLead, createClaimCode, firebaseEnabled, useChallenge } from "@/lib/participant";
 import { StaffHeader, StepBadge } from "@/components/StaffHeader";
@@ -67,6 +69,7 @@ function ShareBottleCode({ code, points }: { code: string; points: number }) {
 /** Souvenirs travelers redeemed with points, waiting to be handed over at the end of the trip. */
 function PendingSouvenirs({ onCount }: { onCount: (count: number) => void }) {
   const [items, setItems] = useState<PendingRedemption[] | null>(null);
+  const allRewards = useAllRewards();
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -140,11 +143,11 @@ function PendingSouvenirs({ onCount }: { onCount: (count: number) => void }) {
       )}
       <ul className="mt-3 space-y-2">
         {items?.map((item) => {
-          const reward = findReward(item.rewardId);
+          const reward = findRewardIn(allRewards, item.rewardId);
           return (
             <li key={item.id} className="flex items-center gap-3 rounded-2xl bg-[#F3F4DC] p-2.5">
               <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[#DDE5BE]">
-                {reward && <Image src={reward.image} alt="" fill sizes="56px" className="object-cover" />}
+                {reward && <Image src={reward.image} alt="" fill sizes="56px" className="object-cover" style={focusStyle(reward.imageFocus)} />}
               </div>
               <div className="min-w-0 flex-1 text-sm">
                 <p className="font-semibold leading-snug">{item.rewardLabel}</p>
