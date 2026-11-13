@@ -41,7 +41,7 @@ async function syncProfile(email: string) {
 /** Everyone with staff access: the owners from the server settings and the people added in the Team tab. */
 export async function GET(request: Request) {
   return handle(async () => {
-    await requireSession(request, ["admin"]);
+    const session = await requireSession(request, ["admin"]);
     const snap = await adminDb().collection("staff").get();
     const owners = ownerEmails();
     const entries = [
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
         return { ...entry, name: account?.name ?? "", hasAccount: Boolean(account), verified: account?.verified ?? false };
       }),
     );
-    return ok({ items });
+    return ok({ items, isMainAdmin: isOwner(session.email) });
   });
 }
 
@@ -73,8 +73,13 @@ export async function POST(request: Request) {
     const email = normalizeEmail(String(body.email ?? ""));
     if (!EMAIL.test(email) || email.length > 120) throw new HttpError(400, "Please enter a valid email.");
     if (body.role !== "admin" && body.role !== "leader") throw new HttpError(400, "Choose Admin or Tour leader.");
-    if (isOwner(email)) throw new HttpError(409, "This person is an owner and is always an admin.");
+    if (isOwner(email)) throw new HttpError(409, "This person is the main admin and always stays an admin.");
     if (email === normalizeEmail(session.email)) throw new HttpError(409, "You can't change your own role.");
+    // Admins can manage tour leaders; only the main admin can add, change or remove admins.
+    const current = (await adminDb().collection("staff").doc(email).get()).data()?.role;
+    if ((body.role === "admin" || current === "admin") && !isOwner(session.email)) {
+      throw new HttpError(403, "Only the main admin can add or change admins.");
+    }
 
     await adminDb()
       .collection("staff")
@@ -91,8 +96,10 @@ export async function DELETE(request: Request) {
     const session = await requireSession(request, ["admin"]);
     const body = await readJson<{ email: string }>(request);
     const email = normalizeEmail(String(body.email ?? ""));
-    if (isOwner(email)) throw new HttpError(409, "Owners can only be changed in the server settings.");
+    if (isOwner(email)) throw new HttpError(409, "The main admin can only be changed in the server settings.");
     if (email === normalizeEmail(session.email)) throw new HttpError(409, "You can't remove yourself.");
+    const current = (await adminDb().collection("staff").doc(email).get()).data()?.role;
+    if (current === "admin" && !isOwner(session.email)) throw new HttpError(403, "Only the main admin can remove admins.");
     await adminDb().collection("staff").doc(email).delete();
     await syncProfile(email);
     return ok({});

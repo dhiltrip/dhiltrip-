@@ -55,11 +55,24 @@ function StatusLine({ member }: { member: Member }) {
   return <span key="active" className="text-[#03603F]">Active</span>;
 }
 
-function MemberRow({ member, me, onChanged, onError }: { member: Member; me: string; onChanged: () => void; onError: (message: string) => void }) {
+function MemberRow({
+  member,
+  me,
+  isMainAdmin,
+  onChanged,
+  onError,
+}: {
+  member: Member;
+  me: string;
+  isMainAdmin: boolean;
+  onChanged: () => void;
+  onError: (message: string) => void;
+}) {
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const isMe = member.email === me.toLowerCase();
-  const locked = member.owner || isMe;
+  // Only the main admin may change or remove admins; anyone with admin access may manage tour leaders.
+  const locked = member.owner || isMe || (member.role === "admin" && !isMainAdmin);
 
   const changeRole = async (role: Role) => {
     if (role === member.role) return;
@@ -94,7 +107,7 @@ function MemberRow({ member, me, onChanged, onError }: { member: Member; me: str
             )}
             {member.owner && (
               <span key="owner" className="flex items-center gap-1 rounded-full bg-[#FBF0C4] px-2 py-0.5 text-[11px] font-bold text-[#5A4300]">
-                <Crown className="h-3 w-3" /> Owner
+                <Crown className="h-3 w-3" /> Main admin
               </span>
             )}
             {isMe && <span key="me" className="rounded-full bg-[#DDE5BE] px-2 py-0.5 text-[11px] font-bold text-[#03603F]">You</span>}
@@ -123,7 +136,7 @@ function MemberRow({ member, me, onChanged, onError }: { member: Member; me: str
         )}
       </div>
       {member.owner && (
-        <p className="mt-2 text-pretty text-xs text-[#436850]">Owners are set in the server settings and always stay admins.</p>
+        <p className="mt-2 text-pretty text-xs text-[#436850]">The main admin can add and remove other admins, and always stays an admin.</p>
       )}
 
       {confirming && (
@@ -155,6 +168,7 @@ function MemberRow({ member, me, onChanged, onError }: { member: Member; me: str
 /** Admins add tour leaders and other admins by email; no code or server settings needed. */
 export function TeamManager({ myEmail }: { myEmail: string }) {
   const [items, setItems] = useState<Member[] | null>(null);
+  const [isMainAdmin, setIsMainAdmin] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("leader");
   const [busy, setBusy] = useState(false);
@@ -164,9 +178,12 @@ export function TeamManager({ myEmail }: { myEmail: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    callApi<{ items: Member[] }>("/api/admin/team").then((result) => {
+    callApi<{ items: Member[]; isMainAdmin: boolean }>("/api/admin/team").then((result) => {
       if (cancelled) return;
-      if (result.ok) setItems(result.items);
+      if (result.ok) {
+        setItems(result.items);
+        setIsMainAdmin(result.isMainAdmin === true);
+      }
       else setError(result.message);
     });
     return () => {
@@ -181,13 +198,13 @@ export function TeamManager({ myEmail }: { myEmail: string }) {
     setBusy(true);
     setError(null);
     setAdded(null);
-    const result = await callApi("/api/admin/team", { email, role });
+    const result = await callApi("/api/admin/team", { email, role: isMainAdmin ? role : "leader" });
     setBusy(false);
     if (!result.ok) {
       setError(result.message);
       return;
     }
-    setAdded(`${email.trim()} is now a ${ROLE_LABEL[role].toLowerCase()}.`);
+    setAdded(`${email.trim()} is now a ${ROLE_LABEL[isMainAdmin ? role : "leader"].toLowerCase()}.`);
     setEmail("");
     reload();
   };
@@ -217,8 +234,13 @@ export function TeamManager({ myEmail }: { myEmail: string }) {
         <div>
           <p className="text-sm font-semibold">Role</p>
           <div className="mt-1.5">
-            <RolePicker value={role} onChange={setRole} />
+            <RolePicker value={isMainAdmin ? role : "leader"} onChange={setRole} disabled={!isMainAdmin} />
           </div>
+          {!isMainAdmin && items && (
+            <p className="mt-2 text-pretty text-xs font-semibold text-[#5A4300]">
+              You can add tour leaders. Only the main admin can add or remove admins.
+            </p>
+          )}
           <p key={role} className="mt-2 text-pretty text-xs text-[#436850]">
             {role === "admin"
               ? "Admins create booking codes, edit packages and stock, and manage the team. They can also use tour leader tools."
@@ -260,7 +282,7 @@ export function TeamManager({ myEmail }: { myEmail: string }) {
               ) : (
                 <ul className="mt-3 grid gap-3 xl:grid-cols-2">
                   {leaders.map((member) => (
-                    <MemberRow key={member.email} member={member} me={myEmail} onChanged={reload} onError={setError} />
+                    <MemberRow key={member.email} member={member} me={myEmail} isMainAdmin={isMainAdmin} onChanged={reload} onError={setError} />
                   ))}
                 </ul>
               )}
@@ -272,7 +294,7 @@ export function TeamManager({ myEmail }: { myEmail: string }) {
               </h2>
               <ul className="mt-3 grid gap-3 xl:grid-cols-2">
                 {admins.map((member) => (
-                  <MemberRow key={member.email} member={member} me={myEmail} onChanged={reload} onError={setError} />
+                  <MemberRow key={member.email} member={member} me={myEmail} isMainAdmin={isMainAdmin} onChanged={reload} onError={setError} />
                 ))}
               </ul>
             </section>
